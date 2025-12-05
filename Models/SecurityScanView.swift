@@ -6,11 +6,11 @@
 import SwiftUI
 
 struct SecurityScanView: View {
+    private let scanner = SecurityScanner()
     @State private var isScanning = false
     @State private var scanProgress: Double = 0
     @State private var securityIssues: [SecurityIssue] = []
     @State private var scanComplete = false
-    @State private var scanTimer: Timer?
 
     var body: some View {
         VStack(spacing: 20) {
@@ -117,55 +117,32 @@ struct SecurityScanView: View {
         }
         .padding()
         .onDisappear {
-            stopScan()
+            isScanning = false
         }
     }
 
     private func performScan() {
+        guard !isScanning else { return }
+
         isScanning = true
+        scanComplete = false
         scanProgress = 0
         securityIssues = []
-        scanComplete = false
 
-        // Simulate scanning with progress
-        scanTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [self] timer in
-            scanProgress += 0.05
+        Task.detached { [scanner] in
+            let issues = await scanner.run { progress in
+                Task { @MainActor in
+                    scanProgress = progress
+                }
+            }
 
-            if scanProgress >= 1.0 {
-                timer.invalidate()
-                scanTimer = nil
-
-                // Simulate finding some issues
-                securityIssues = [
-                    SecurityIssue(
-                        name: "Outdated Software",
-                        description: "Some applications need security updates",
-                        severity: .medium,
-                        category: .software
-                    ),
-                    SecurityIssue(
-                        name: "Weak Password Detected",
-                        description: "Keychain contains passwords with weak entropy",
-                        severity: .high,
-                        category: .passwords
-                    ),
-                    SecurityIssue(
-                        name: "Firewall Disabled",
-                        description: "macOS firewall is currently disabled",
-                        severity: .medium,
-                        category: .network
-                    ),
-                ]
-
+            await MainActor.run {
+                securityIssues = issues
                 isScanning = false
                 scanComplete = true
+                scanProgress = 1.0
             }
         }
-    }
-
-    private func stopScan() {
-        scanTimer?.invalidate()
-        scanTimer = nil
     }
 }
 

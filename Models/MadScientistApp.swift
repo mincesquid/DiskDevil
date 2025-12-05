@@ -12,6 +12,7 @@ struct MadScientistApp: App {
     @StateObject private var subscriptionManager = SubscriptionManager()
     @StateObject private var privacyEngine = PrivacyEngine()
     @StateObject private var permissionManager = PermissionManager()
+    @StateObject private var networkMonitor = NetworkMonitorService()
 
     var body: some Scene {
         WindowGroup {
@@ -19,6 +20,7 @@ struct MadScientistApp: App {
                 .environmentObject(subscriptionManager)
                 .environmentObject(privacyEngine)
                 .environmentObject(permissionManager)
+                .environmentObject(networkMonitor)
                 .frame(minWidth: 900, minHeight: 700)
         }
         .windowStyle(.hiddenTitleBar)
@@ -30,6 +32,15 @@ struct MadScientistApp: App {
             SettingsView()
                 .environmentObject(subscriptionManager)
         }
+
+        MenuBarExtra("Mad Scientist", systemImage: "shield.lefthalf.filled") {
+            MenuBarStatusView()
+                .environmentObject(subscriptionManager)
+                .environmentObject(privacyEngine)
+                .environmentObject(networkMonitor)
+                .environmentObject(permissionManager)
+        }
+        .menuBarExtraStyle(.window)
     }
 }
 

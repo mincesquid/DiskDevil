@@ -7,11 +7,8 @@ import SwiftUI
 
 struct NetworkMonitorView: View {
     @EnvironmentObject var subscriptionManager: SubscriptionManager
+    @EnvironmentObject var monitor: NetworkMonitorService
     @State private var isMonitoring = false
-    @State private var connections: [NetworkConnection] = []
-    @State private var bytesIn: Int64 = 0
-    @State private var bytesOut: Int64 = 0
-    @State private var monitorTimer: Timer?
 
     var body: some View {
         VStack(spacing: 20) {
@@ -43,9 +40,9 @@ struct NetworkMonitorView: View {
 
             // Traffic Summary
             HStack(spacing: 20) {
-                TrafficCard(title: "Download", bytes: bytesIn, icon: "arrow.down.circle.fill", color: .green)
-                TrafficCard(title: "Upload", bytes: bytesOut, icon: "arrow.up.circle.fill", color: .blue)
-                TrafficCard(title: "Connections", value: "\(connections.count)", icon: "link", color: .orange)
+                TrafficCard(title: "Download", bytes: monitor.bytesIn, icon: "arrow.down.circle.fill", color: .green)
+                TrafficCard(title: "Upload", bytes: monitor.bytesOut, icon: "arrow.up.circle.fill", color: .blue)
+                TrafficCard(title: "Connections", value: "\(monitor.connections.count)", icon: "link", color: .orange)
             }
             .padding()
             .background(Color(.controlBackgroundColor))
@@ -76,7 +73,7 @@ struct NetworkMonitorView: View {
             .cornerRadius(12)
 
             // Connections List
-            if connections.isEmpty {
+            if monitor.connections.isEmpty {
                 VStack(spacing: 12) {
                     Image(systemName: "network.slash")
                         .font(.system(size: 40))
@@ -90,7 +87,7 @@ struct NetworkMonitorView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding()
             } else {
-                List(connections) { connection in
+                List(monitor.connections) { connection in
                     NetworkConnectionRow(connection: connection)
                 }
                 .listStyle(.inset)
@@ -103,42 +100,19 @@ struct NetworkMonitorView: View {
         .onDisappear {
             stopMonitoring()
         }
-    }
-
-    private func startMonitoring() {
-        // Simulate network monitoring
-        monitorTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [self] timer in
-            guard isMonitoring else {
-                timer.invalidate()
-                monitorTimer = nil
-                return
-            }
-
-            bytesIn += Int64.random(in: 1000 ... 100_000)
-            bytesOut += Int64.random(in: 500 ... 50000)
-
-            if Int.random(in: 0 ... 5) == 0 {
-                let newConnection = NetworkConnection(
-                    process: ["Safari", "Chrome", "Mail", "Slack", "Finder"].randomElement()!,
-                    remoteAddress: "\(Int.random(in: 1 ... 255)).\(Int.random(in: 1 ... 255)).\(Int.random(in: 1 ... 255)).\(Int.random(in: 1 ... 255))",
-                    port: [80, 443, 8080, 22, 3000].randomElement()!,
-                    protocol: ["TCP", "UDP"].randomElement()!,
-                    status: .established
-                )
-
-                DispatchQueue.main.async {
-                    connections.insert(newConnection, at: 0)
-                    if connections.count > 20 {
-                        connections.removeLast()
-                    }
-                }
+        .onAppear {
+            if isMonitoring {
+                startMonitoring()
             }
         }
     }
 
+    private func startMonitoring() {
+        monitor.start()
+    }
+
     private func stopMonitoring() {
-        monitorTimer?.invalidate()
-        monitorTimer = nil
+        monitor.stop()
     }
 }
 
