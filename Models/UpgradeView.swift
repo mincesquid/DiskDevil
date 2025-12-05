@@ -1,12 +1,13 @@
 //
 //  UpgradeView.swift
-//  Mad Scientist
+//  DiskDevil
 //
 
 import SwiftUI
 
 struct UpgradeView: View {
     @EnvironmentObject var subscriptionManager: SubscriptionManager
+    @Environment(\.openWindow) private var openWindow
     @State private var selectedPlan: SubscriptionTier = .premium
     @State private var isAnnual = true
     @State private var isPurchasing = false
@@ -17,6 +18,18 @@ struct UpgradeView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
+                HStack {
+                    Spacer()
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+
                 // Header
                 VStack(spacing: 12) {
                     Image(systemName: "crown.fill")
@@ -33,7 +46,7 @@ struct UpgradeView: View {
                         .font(.largeTitle)
                         .fontWeight(.bold)
 
-                    Text("Unlock the full power of Mad Scientist")
+                    Text("Unlock the full power of DiskDevil")
                         .font(.title3)
                         .foregroundColor(.secondary)
                 }
@@ -255,7 +268,7 @@ struct PlanCard: View {
 
 struct PremiumUpgradeView: View {
     let feature: String
-    @State private var showUpgradeSheet = false
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(spacing: 24) {
@@ -275,7 +288,7 @@ struct PremiumUpgradeView: View {
                 .multilineTextAlignment(.center)
 
             Button("Upgrade Now") {
-                showUpgradeSheet = true
+                openWindow(id: "upgrade")
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
@@ -283,8 +296,5 @@ struct PremiumUpgradeView: View {
             Spacer()
         }
         .padding()
-        .sheet(isPresented: $showUpgradeSheet) {
-            UpgradeView()
-        }
     }
 }

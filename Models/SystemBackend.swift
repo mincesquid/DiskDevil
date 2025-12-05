@@ -8,7 +8,7 @@ final class NetworkMonitorService: ObservableObject {
     @Published private(set) var bytesOut: Int64 = 0
 
     private var timer: DispatchSourceTimer?
-    private let queue = DispatchQueue(label: "app.madscientist.networkmonitor")
+    private let queue = DispatchQueue(label: "app.diskdevil.networkmonitor")
     private var lastInterfaceTotals: (Int64, Int64)?
     private let maxConnections = 80
 

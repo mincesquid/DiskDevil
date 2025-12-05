@@ -1,6 +1,6 @@
 //
-//  MadScientistApp.swift
-//  Mad Scientist
+//  DiskDevilApp.swift
+//  DiskDevil
 //
 //  macOS Security & Recovery Suite
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct MadScientistApp: App {
+struct DiskDevilApp: App {
     @StateObject private var subscriptionManager = SubscriptionManager()
     @StateObject private var privacyEngine = PrivacyEngine()
     @StateObject private var permissionManager = PermissionManager()
@@ -33,7 +33,13 @@ struct MadScientistApp: App {
                 .environmentObject(subscriptionManager)
         }
 
-        MenuBarExtra("Mad Scientist", systemImage: "shield.lefthalf.filled") {
+        WindowGroup("Upgrade", id: "upgrade") {
+            UpgradeView()
+                .environmentObject(subscriptionManager)
+        }
+        .windowResizability(.contentSize)
+
+        MenuBarExtra("DiskDevil", systemImage: "shield.lefthalf.filled") {
             MenuBarStatusView()
                 .environmentObject(subscriptionManager)
                 .environmentObject(privacyEngine)
@@ -47,7 +53,7 @@ struct MadScientistApp: App {
 struct AppCommands: Commands {
     var body: some Commands {
         CommandGroup(replacing: .help) {
-            Button("Mad Scientist Help") {
+            Button("DiskDevil Help") {
                 // Open help
             }
         }
