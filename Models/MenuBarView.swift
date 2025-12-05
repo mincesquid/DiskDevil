@@ -18,7 +18,7 @@ struct MenuBarStatusView: View {
             permissionRow
             Divider()
             HStack {
-                Button("Open Mad Scientist") {
+                Button("Open DiskDevil") {
                     NSApp.activate(ignoringOtherApps: true)
                 }
                 Spacer()
@@ -43,7 +43,7 @@ struct MenuBarStatusView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Mad Scientist")
+                Text("DiskDevil")
                     .font(.headline)
                 Text(subscriptionManager.tier.displayName)
                     .font(.caption)

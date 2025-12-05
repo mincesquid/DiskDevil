@@ -1,6 +1,6 @@
 //
 //  PrivacySliderView.swift
-//  Mad Scientist
+//  DiskDevil
 //
 
 import SwiftUI
@@ -8,8 +8,8 @@ import SwiftUI
 struct PrivacySliderView: View {
     @EnvironmentObject var subscriptionManager: SubscriptionManager
     @EnvironmentObject var privacyEngine: PrivacyEngine
+    @Environment(\.openWindow) private var openWindow
     @State private var selectedLevel: Double = 1
-    @State private var showUpgradeSheet = false
 
     var body: some View {
         ScrollView {
@@ -98,7 +98,7 @@ struct PrivacySliderView: View {
                                                     selectedLevel = Double(level)
                                                     privacyEngine.setLevel(level)
                                                 } else {
-                                                    showUpgradeSheet = true
+                                                    openUpgradeWindow()
                                                 }
                                             }
                                     }
@@ -127,7 +127,7 @@ struct PrivacySliderView: View {
                                 tier: "Premium or Elite",
                                 description: "Unlock Apple telemetry blocking and advanced protection"
                             ) {
-                                showUpgradeSheet = true
+                                openUpgradeWindow()
                             }
                         } else if subscriptionManager.tier == .premium {
                             LockBanner(
@@ -135,7 +135,7 @@ struct PrivacySliderView: View {
                                 tier: "Elite",
                                 description: "Maximum paranoia mode with zero-trust architecture"
                             ) {
-                                showUpgradeSheet = true
+                                openUpgradeWindow()
                             }
                         }
                     }
@@ -157,9 +157,6 @@ struct PrivacySliderView: View {
         .onAppear {
             selectedLevel = Double(privacyEngine.currentLevel)
         }
-        .sheet(isPresented: $showUpgradeSheet) {
-            UpgradeView()
-        }
     }
 
     func canAccessLevel(_ level: Int) -> Bool {
@@ -174,6 +171,10 @@ struct PrivacySliderView: View {
         case 10: return .purple
         default: return .gray
         }
+    }
+
+    private func openUpgradeWindow() {
+        openWindow(id: "upgrade")
     }
 }
 

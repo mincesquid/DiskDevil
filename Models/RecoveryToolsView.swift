@@ -1,6 +1,6 @@
 //
 //  RecoveryToolsView.swift
-//  Mad Scientist
+//  DiskDevil
 //
 
 import SwiftUI

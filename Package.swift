@@ -2,16 +2,16 @@
 import PackageDescription
 
 let package = Package(
-    name: "MadScientist",
+    name: "DiskDevil",
     platforms: [
         .macOS(.v13),
     ],
     products: [
-        .executable(name: "MadScientist", targets: ["MadScientist"]),
+        .executable(name: "DiskDevil", targets: ["DiskDevil"]),
     ],
     targets: [
         .executableTarget(
-            name: "MadScientist",
+            name: "DiskDevil",
             path: "Models"
         ),
     ]

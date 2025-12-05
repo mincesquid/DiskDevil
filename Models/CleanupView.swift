@@ -1,6 +1,6 @@
 //
 //  CleanupView.swift
-//  Mad Scientist
+//  DiskDevil
 //
 
 import AppKit

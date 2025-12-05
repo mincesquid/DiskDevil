@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Mad Scientist
+//  DiskDevil
 //
 
 import SwiftUI
@@ -16,12 +16,13 @@ struct ContentView: View {
         NavigationSplitView {
             SidebarView(selectedTab: $selectedTab)
         } detail: {
-            DetailView(selectedTab: selectedTab)
+            DetailContent(selectedTab: selectedTab)
         }
+        .navigationSplitViewColumnWidth(min: 220, ideal: 250)
     }
 }
 
-enum NavigationItem: String, CaseIterable {
+enum NavigationItem: String, CaseIterable, Hashable {
     case dashboard = "Dashboard"
     case privacySlider = "Privacy Protection"
     case hiddenFiles = "Hidden Files"
@@ -62,22 +63,27 @@ struct SidebarView: View {
 
     var body: some View {
         List(NavigationItem.allCases, id: \.self, selection: $selectedTab) { item in
-            NavigationLink(value: item) {
-                HStack {
-                    Image(systemName: item.icon)
-                        .frame(width: 20)
-                    Text(item.rawValue)
-                    Spacer()
-                    if item.isPremium && subscriptionManager.tier == .free {
-                        Image(systemName: "lock.fill")
-                            .foregroundColor(.orange)
-                            .font(.caption)
-                    }
+            HStack {
+                Image(systemName: item.icon)
+                    .frame(width: 20)
+                Text(item.rawValue)
+                Spacer()
+                if item.isPremium && subscriptionManager.tier == .free {
+                    Image(systemName: "lock.fill")
+                        .foregroundColor(.orange)
+                        .font(.caption)
+                }
+            }
+            .contentShape(Rectangle())
+            .tag(item)
+            .onTapGesture {
+                if !(item.isPremium && subscriptionManager.tier == .free) {
+                    selectedTab = item
                 }
             }
             .disabled(item.isPremium && subscriptionManager.tier == .free)
         }
-        .navigationTitle("Mad Scientist")
+        .navigationTitle("DiskDevil")
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 SubscriptionBadge()
@@ -86,7 +92,7 @@ struct SidebarView: View {
     }
 }
 
-struct DetailView: View {
+struct DetailContent: View {
     let selectedTab: NavigationItem
     @EnvironmentObject var subscriptionManager: SubscriptionManager
 

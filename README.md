@@ -1,4 +1,4 @@
-# MadScientist
+# DiskDevil
 
 ## Developer / Commit automation
 
@@ -33,4 +33,3 @@ git add .
 ```
 
 CI (GitHub Actions) will run on pushes and pull requests to `main` and checks formatting, lint, build, and tests.
-

@@ -1,6 +1,6 @@
 //
 //  SecurityScanView.swift
-//  Mad Scientist
+//  DiskDevil
 //
 
 import SwiftUI

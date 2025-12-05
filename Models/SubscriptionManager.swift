@@ -1,6 +1,6 @@
 //
 //  SubscriptionManager.swift
-//  Mad Scientist
+//  DiskDevil
 //
 
 import Combine

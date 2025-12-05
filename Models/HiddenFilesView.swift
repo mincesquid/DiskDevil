@@ -1,6 +1,6 @@
 //
 //  HiddenFilesView.swift
-//  Mad Scientist
+//  DiskDevil
 //
 
 import SwiftUI

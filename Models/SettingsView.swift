@@ -1,6 +1,6 @@
 //
 //  SettingsView.swift
-//  Mad Scientist
+//  DiskDevil
 //
 
 import SwiftUI
@@ -28,7 +28,7 @@ struct SettingsView: View {
                         .font(.title)
                         .fontWeight(.bold)
 
-                    Text("Configure Mad Scientist preferences")
+                    Text("Configure DiskDevil preferences")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
@@ -38,7 +38,7 @@ struct SettingsView: View {
                 SettingsSection(title: "General", icon: "gear") {
                     SettingsToggle(
                         title: "Launch at Login",
-                        description: "Start Mad Scientist when you log in",
+                        description: "Start DiskDevil when you log in",
                         isOn: $launchAtLogin
                     )
 

@@ -1,6 +1,6 @@
 //
 //  PermissionManager.swift
-//  Mad Scientist
+//  DiskDevil
 //
 
 import AppKit

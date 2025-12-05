@@ -1,6 +1,6 @@
 //
 //  DashboardView.swift
-//  Mad Scientist
+//  DiskDevil
 //
 
 import SwiftUI
@@ -19,7 +19,7 @@ struct DashboardView: View {
                         .font(.system(size: 60))
                         .foregroundColor(.purple)
 
-                    Text("Mad Scientist")
+                    Text("DiskDevil")
                         .font(.largeTitle)
                         .fontWeight(.bold)
 

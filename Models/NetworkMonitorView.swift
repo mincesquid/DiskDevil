@@ -1,6 +1,6 @@
 //
 //  NetworkMonitorView.swift
-//  Mad Scientist
+//  DiskDevil
 //
 
 import SwiftUI
