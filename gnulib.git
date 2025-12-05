@@ -1,0 +1,24 @@
+class Node:
+    def __init__(self, value):
+        self.value = value
+        self.next = None
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+    
+    def connect(self, node):
+        if not self.head:
+            self.head = node
+        else:
+            current = self.head
+            while current.next:
+                current = current.next
+            current.next = node
+
+# Usage
+list1 = LinkedList()
+node1 = Node(1)
+node2 = Node(2)
+list1.connect(node1)
+list1.connect(node2)

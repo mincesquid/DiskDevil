@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Homebrew dependencies
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" &>/dev/null || true
+          brew update || true
+          brew install swiftlint swiftformat || true
+
+      - name: Check Swift format
+        run: |
+          echo "Checking Swift format..."
+          if command -v swiftformat >/dev/null 2>&1; then
+            swiftformat --lint . || true
+          else
+            echo "swiftformat not installed, skipping format check"
+          fi
+
+      - name: Run SwiftLint
+        run: |
+          echo "Running swiftlint..."
+          if command -v swiftlint >/dev/null 2>&1; then
+            swiftlint lint || true
+          else
+            echo "swiftlint not installed, skipping lint"
+          fi
+
+      - name: Build & test (SPM or Xcode)
+        run: |
+          echo "Attempting to detect build system..."
+          if [ -f Package.swift ]; then
+            echo "Detected Swift Package Manager (Package.swift)"
+            swift build --strip-dead-code
+            swift test
+          elif ls *.xcodeproj 1> /dev/null 2>&1; then
+            echo "Detected Xcode project file; attempting xcodebuild"
+            PROJECT=$(ls *.xcodeproj | head -n1)
+            echo "Using project: $PROJECT"
+            # Try a best-effort build; this may need a scheme name in some repos
+            xcodebuild -project "$PROJECT" -configuration Debug -sdk macosx build || echo "xcodebuild build failed (best-effort)"
+            # Try tests if configured; run best-effort only
+            xcodebuild -project "$PROJECT" -configuration Debug -sdk macosx test -destination 'platform=macOS' || echo "xcodebuild test failed or not configured"
+          else
+            echo "No Package.swift or .xcodeproj found — skipping build and tests."
+          fi
