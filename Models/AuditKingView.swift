@@ -4,6 +4,7 @@
 //
 //  Military-Grade Ultimate System Audit - Elite Tier Exclusive
 
+import AppKit
 import SwiftUI
 
 struct AuditKingView: View {
@@ -236,16 +237,70 @@ struct AuditKingView: View {
             let severities: [FindingSeverity] = [.critical, .high, .medium, .low]
             let severity = severities.randomElement() ?? .low
 
+            // Generate realistic file paths and hashes based on phase
+            let (filePath, fileHash) = generateSuspiciousFile(for: phase)
+
             let finding = AuditFinding(
                 title: phase.sampleFinding,
                 description: phase.findingDescription,
                 severity: severity,
-                phase: phase
+                phase: phase,
+                filePath: filePath,
+                fileHash: fileHash
             )
             phaseFindings.append(finding)
         }
 
         return phaseFindings
+    }
+
+    private func generateSuspiciousFile(for phase: AuditPhase) -> (String?, String?) {
+        // Generate realistic suspicious file paths based on audit phase
+        let suspiciousFiles: [String]
+
+        switch phase {
+        case .processAnalysis:
+            suspiciousFiles = [
+                "/usr/local/bin/unknown_daemon",
+                "/Library/Application Support/SuspiciousApp/agent",
+                "/tmp/.hidden_process",
+            ]
+        case .fileSystemAudit:
+            suspiciousFiles = [
+                "/etc/sudoers.d/suspicious_rule",
+                "/var/root/.ssh/authorized_keys",
+                "/System/Library/LaunchDaemons/com.unknown.plist",
+            ]
+        case .kernelInspection:
+            suspiciousFiles = [
+                "/Library/Extensions/unknown.kext",
+                "/System/Library/Extensions/suspicious_driver.kext",
+            ]
+        case .backdoorDetection:
+            suspiciousFiles = [
+                "/Library/LaunchAgents/com.persistent.agent.plist",
+                "/Library/LaunchDaemons/com.backdoor.daemon.plist",
+                "~/Library/LaunchAgents/com.suspicious.app.plist",
+            ]
+        case .rootkitScan:
+            suspiciousFiles = [
+                "/usr/bin/suspicious_binary",
+                "/Library/PrivilegedHelperTools/com.unknown.helper",
+                "/var/db/.hidden_rootkit",
+            ]
+        default:
+            // For phases without specific files
+            return (nil, nil)
+        }
+
+        let selectedFile = suspiciousFiles.randomElement()
+
+        // Generate a fake SHA256 hash (64 hex characters)
+        let hash = String((0 ..< 64).map { _ in
+            "0123456789abcdef".randomElement()!
+        })
+
+        return (selectedFile, hash)
     }
 
     private func calculateThreatLevel() -> ThreatLevel {
@@ -419,6 +474,8 @@ struct AuditFinding: Identifiable {
     let description: String
     let severity: FindingSeverity
     let phase: AuditPhase
+    let filePath: String? // Path to suspicious file for inspection
+    let fileHash: String? // SHA256 hash for VirusTotal lookup
 }
 
 // MARK: - UI Components
@@ -507,44 +564,109 @@ struct AuditCategoriesGrid: View {
 
 struct FindingRow: View {
     let finding: AuditFinding
+    @State private var showWarning = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: finding.severity.icon)
-                .foregroundColor(finding.severity.color)
-                .font(.title3)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: finding.severity.icon)
+                    .foregroundColor(finding.severity.color)
+                    .font(.title3)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(finding.title)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(finding.title)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
 
-                Text(finding.description)
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
+                    Text(finding.description)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
 
-                HStack(spacing: 8) {
-                    Text(finding.severity.rawValue)
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(finding.severity.color.opacity(0.2))
-                        .foregroundColor(finding.severity.color)
-                        .cornerRadius(4)
+                    HStack(spacing: 8) {
+                        Text(finding.severity.rawValue)
+                            .font(.caption2)
+                            .fontWeight(.bold)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(finding.severity.color.opacity(0.2))
+                            .foregroundColor(finding.severity.color)
+                            .cornerRadius(4)
 
-                    Text(finding.phase.title)
-                        .font(.caption2)
-                        .foregroundColor(.white.opacity(0.5))
+                        Text(finding.phase.title)
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.5))
+                    }
                 }
+
+                Spacer()
             }
 
-            Spacer()
+            // Action buttons for files
+            if finding.filePath != nil {
+                HStack(spacing: 12) {
+                    Button(action: { showWarning = true }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "folder.fill")
+                                .font(.caption)
+                            Text("Reveal in Finder")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.blue.opacity(0.2))
+                        .foregroundColor(.blue)
+                        .cornerRadius(6)
+                    }
+                    .buttonStyle(.plain)
+
+                    if let hash = finding.fileHash {
+                        Button(action: { openVirusTotal(hash: hash) }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "shield.checkered")
+                                    .font(.caption)
+                                Text("Check VirusTotal")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color.purple.opacity(0.2))
+                            .foregroundColor(.purple)
+                            .cornerRadius(6)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.top, 4)
+            }
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(Color.white.opacity(0.05))
         .cornerRadius(8)
+        .alert("⚠️ WARNING - DO NOT EXECUTE", isPresented: $showWarning) {
+            Button("Cancel", role: .cancel) {}
+            Button("Reveal File") {
+                if let path = finding.filePath {
+                    revealInFinder(path: path)
+                }
+            }
+        } message: {
+            Text("This file has been flagged as suspicious. DO NOT open, run, or execute it. Only inspect it to verify if it's a false positive from software you intentionally installed.")
+        }
+    }
+
+    private func revealInFinder(path: String) {
+        let url = URL(fileURLWithPath: path)
+        NSWorkspace.shared.activateFileViewerSelecting([url])
+    }
+
+    private func openVirusTotal(hash: String) {
+        let urlString = "https://www.virustotal.com/gui/file/\(hash)"
+        if let url = URL(string: urlString) {
+            NSWorkspace.shared.open(url)
+        }
     }
 }
