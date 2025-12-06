@@ -73,7 +73,11 @@ class SubscriptionManager: ObservableObject {
     func updateSubscription(tier: SubscriptionTier, expirationDate: Date?) {
         self.tier = tier
         self.expirationDate = expirationDate
-        isActive = expirationDate == nil || expirationDate! > Date()
+        if let expiration = expirationDate {
+            isActive = expiration > Date()
+        } else {
+            isActive = true
+        }
 
         UserDefaults.standard.set(tier.rawValue, forKey: "subscriptionTier")
         if let expiration = expirationDate {

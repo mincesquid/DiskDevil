@@ -68,8 +68,9 @@ class PermissionManager: ObservableObject {
         let response = alert.runModal()
         if response == .alertFirstButtonReturn {
             // Open System Settings to Security & Privacy
-            let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")!
-            NSWorkspace.shared.open(url)
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") {
+                NSWorkspace.shared.open(url)
+            }
         }
     }
 
@@ -94,6 +95,8 @@ class PermissionManager: ObservableObject {
     }
 
     func openSystemSettings() {
-        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:")!)
+        if let url = URL(string: "x-apple.systempreferences:") {
+            NSWorkspace.shared.open(url)
+        }
     }
 }

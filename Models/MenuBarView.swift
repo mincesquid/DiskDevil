@@ -35,9 +35,9 @@ struct MenuBarStatusView: View {
                 networkMonitor.start()
             }
         }
-        .onChange(of: isMonitoring) { active in
+        .onChange(of: isMonitoring, perform: { active in
             active ? networkMonitor.start() : networkMonitor.stop()
-        }
+        })
     }
 
     private var header: some View {
