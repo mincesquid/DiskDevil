@@ -11,6 +11,7 @@ struct PrivacySliderView: View {
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismiss) private var dismiss
     @State private var selectedLevel: Double = 1
+    @State private var showAppliedConfirmation = false
 
     var body: some View {
         ScrollView {
@@ -159,10 +160,19 @@ struct PrivacySliderView: View {
 
                 // Actions
                 HStack(spacing: 12) {
-                    Button("Apply") {
+                    Button {
                         applySelection()
+                    } label: {
+                        HStack {
+                            if showAppliedConfirmation {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                            }
+                            Text(showAppliedConfirmation ? "Applied!" : "Apply")
+                        }
                     }
                     .buttonStyle(.borderedProminent)
+                    .disabled(Int(selectedLevel) == privacyEngine.currentLevel)
 
                     Button("Done") {
                         dismiss()
@@ -199,6 +209,12 @@ struct PrivacySliderView: View {
 
     private func applySelection() {
         privacyEngine.setLevel(Int(selectedLevel))
+
+        // Show confirmation feedback
+        showAppliedConfirmation = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            showAppliedConfirmation = false
+        }
     }
 }
 

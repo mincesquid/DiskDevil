@@ -119,8 +119,6 @@ struct SecurityScanView: View {
             Spacer()
         }
         .padding()
-        .glassCard()
-        .padding()
         .aeroBackground()
         .onDisappear {
             isScanning = false

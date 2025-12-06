@@ -39,15 +39,24 @@ struct ContentView: View {
     private func openPrivacyWindow() {
         openWindow(id: "privacy")
 
-        // Nudge the window so it's visibly separate from the main window.
+        // Position the window relative to the main window for better UX
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            if let window = NSApp.windows.first(where: { $0.title == "Privacy Protection" }) {
-                var frame = window.frame
-                frame.origin.x -= 80
-                frame.origin.y -= 40
-                window.setFrame(frame, display: true, animate: true)
-                window.makeKeyAndOrderFront(nil)
-            }
+            guard let mainWindow = NSApp.mainWindow,
+                  let privacyWindow = NSApp.windows.first(where: {
+                      $0.title == "Privacy Protection" && $0 != mainWindow
+                  })
+            else { return }
+
+            // Calculate offset position from main window
+            var newFrame = privacyWindow.frame
+            let mainFrame = mainWindow.frame
+
+            // Position to the right and slightly below the main window
+            newFrame.origin.x = mainFrame.maxX - newFrame.width - 80
+            newFrame.origin.y = mainFrame.maxY - newFrame.height - 40
+
+            privacyWindow.setFrame(newFrame, display: true, animate: true)
+            privacyWindow.makeKeyAndOrderFront(nil)
         }
     }
 }

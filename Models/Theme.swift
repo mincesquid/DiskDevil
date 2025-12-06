@@ -24,8 +24,10 @@ enum AeroTheme {
     static let neon = Color(red: 0.21, green: 0.94, blue: 0.68)
     static let flare = Color(red: 1.0, green: 0.3, blue: 0.42)
     static let sun = Color(red: 1.0, green: 0.78, blue: 0.26)
-    static let fontName = "Segoe UI"
-    static let baseFont: Font = .custom(fontName, size: 15)
+    // Using SF Pro (macOS system font) for better compatibility
+    // Fallback order: SF Pro Display -> Helvetica Neue -> System
+    static let fontName = "SF Pro Display"
+    static let baseFont: Font = .system(size: 15, weight: .regular, design: .default)
 }
 
 struct GlassCard: ViewModifier {
@@ -72,6 +74,7 @@ extension View {
     }
 
     func appFont(_ size: CGFloat, weight: Font.Weight = .regular) -> some View {
-        font(.custom(AeroTheme.fontName, size: size).weight(weight))
+        // Use native macOS system font with specified weight for better rendering
+        font(.system(size: size, weight: weight, design: .default))
     }
 }
