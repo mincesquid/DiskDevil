@@ -26,14 +26,14 @@ struct ContentView: View {
             }
         }
         .navigationSplitViewColumnWidth(min: 220, ideal: 250)
-        .onChange(of: selectedTab) { newValue in
+        .onChange(of: selectedTab, perform: { newValue in
             if newValue == .privacySlider {
                 openPrivacyWindow()
                 selectedTab = lastNonPrivacySelection
             } else {
                 lastNonPrivacySelection = newValue
             }
-        }
+        })
     }
 
     private func openPrivacyWindow() {
