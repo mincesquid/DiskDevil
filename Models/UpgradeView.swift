@@ -396,3 +396,87 @@ struct PremiumUpgradeView: View {
         .padding()
     }
 }
+
+struct EliteUpgradeView: View {
+    let feature: String
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            ZStack {
+                Image(systemName: "crown.fill")
+                    .font(.system(size: 80))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.purple, Color.pink],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .shadow(color: .purple.opacity(0.5), radius: 20)
+            }
+
+            VStack(spacing: 12) {
+                Text("Elite Exclusive")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+
+                Text("\(feature) is a military-grade feature")
+                    .font(.headline)
+                    .foregroundColor(.purple)
+
+                Text("Only available with Elite subscription")
+                    .font(.body)
+                    .foregroundColor(.white.opacity(0.8))
+                    .multilineTextAlignment(.center)
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                FeatureBullet(icon: "crown.fill", text: "Privacy Level 10: MAXIMUM PARANOIA", color: .purple)
+                FeatureBullet(icon: "scope", text: "Military-Grade System Auditing", color: .purple)
+                FeatureBullet(icon: "shield.lefthalf.filled", text: "Advanced Threat Detection", color: .purple)
+                FeatureBullet(icon: "bolt.shield.fill", text: "Real-Time Network Filtering", color: .purple)
+            }
+            .padding()
+            .background(Color.purple.opacity(0.1))
+            .cornerRadius(12)
+
+            Button {
+                openWindow(id: "upgrade")
+            } label: {
+                HStack {
+                    Image(systemName: "crown.fill")
+                    Text("Upgrade to Elite")
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.purple)
+            .controlSize(.large)
+
+            Spacer()
+        }
+        .padding()
+    }
+}
+
+struct FeatureBullet: View {
+    let icon: String
+    let text: String
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(color)
+                .frame(width: 24)
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(.white)
+        }
+    }
+}

@@ -64,6 +64,7 @@ struct ContentView: View {
 enum NavigationItem: String, CaseIterable, Hashable {
     case dashboard = "Dashboard"
     case privacySlider = "Privacy Protection"
+    case auditKing = "AuditKing"
     case hiddenFiles = "Hidden Files"
     case telemetry = "Telemetry Inspector"
     case cleanup = "Smart Cleanup"
@@ -76,6 +77,7 @@ enum NavigationItem: String, CaseIterable, Hashable {
         switch self {
         case .dashboard: return "gauge.with.dots.needle.67percent"
         case .privacySlider: return "shield.lefthalf.filled"
+        case .auditKing: return "crown.fill"
         case .hiddenFiles: return "eye.slash"
         case .telemetry: return "antenna.radiowaves.left.and.right"
         case .cleanup: return "trash"
@@ -94,6 +96,15 @@ enum NavigationItem: String, CaseIterable, Hashable {
             return false
         }
     }
+
+    var isEliteOnly: Bool {
+        switch self {
+        case .auditKing:
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 struct SidebarView: View {
@@ -107,20 +118,27 @@ struct SidebarView: View {
                     .frame(width: 20)
                 Text(item.rawValue)
                 Spacer()
-                if item.isPremium && subscriptionManager.tier == .free {
+                if item.isPremium, subscriptionManager.tier == .free {
                     Image(systemName: "lock.fill")
                         .foregroundColor(.orange)
+                        .font(.caption)
+                } else if item.isEliteOnly, subscriptionManager.tier != .elite {
+                    Image(systemName: "crown.fill")
+                        .foregroundColor(.purple)
                         .font(.caption)
                 }
             }
             .contentShape(Rectangle())
             .tag(item)
             .onTapGesture {
-                if !(item.isPremium && subscriptionManager.tier == .free) {
+                let hasAccess = !(item.isPremium && subscriptionManager.tier == .free) &&
+                    !(item.isEliteOnly && subscriptionManager.tier != .elite)
+                if hasAccess {
                     selectedTab = item
                 }
             }
-            .disabled(item.isPremium && subscriptionManager.tier == .free)
+            .disabled((item.isPremium && subscriptionManager.tier == .free) ||
+                (item.isEliteOnly && subscriptionManager.tier != .elite))
         }
         .navigationTitle("DiskDevil")
         .toolbar {
@@ -137,14 +155,18 @@ struct DetailContent: View {
 
     var body: some View {
         Group {
-            if selectedTab.isPremium && subscriptionManager.tier == .free {
+            if selectedTab.isPremium, subscriptionManager.tier == .free {
                 PremiumUpgradeView(feature: selectedTab.rawValue)
+            } else if selectedTab.isEliteOnly, subscriptionManager.tier != .elite {
+                EliteUpgradeView(feature: selectedTab.rawValue)
             } else {
                 switch selectedTab {
                 case .dashboard:
                     DashboardView()
                 case .privacySlider:
                     PrivacyPlaceholderView()
+                case .auditKing:
+                    AuditKingView()
                 case .hiddenFiles:
                     HiddenFilesView()
                 case .telemetry:
