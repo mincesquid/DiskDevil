@@ -7,7 +7,7 @@
 import AppKit
 import SwiftUI
 
-// MARK: - Threat Level Card
+// MARK: - ThreatLevelCard
 
 struct ThreatLevelCard: View {
     let level: ThreatLevel
@@ -49,7 +49,7 @@ struct ThreatLevelCard: View {
     }
 }
 
-// MARK: - Audit Categories Grid
+// MARK: - AuditCategoriesGrid
 
 struct AuditCategoriesGrid: View {
     let categories: [(String, String, Color)] = [
@@ -93,14 +93,12 @@ struct AuditCategoriesGrid: View {
     }
 }
 
-// MARK: - Finding Row
+// MARK: - FindingRow
 
 struct FindingRow: View {
+    // MARK: Internal
+
     let finding: AuditFinding
-    @State private var showWarning = false
-    @State private var showDetails = false
-    @State private var isFixing = false
-    @State private var fixResult: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -242,12 +240,21 @@ struct FindingRow: View {
                 }
             }
         } message: {
-            Text("This file has been flagged as suspicious. DO NOT open, run, or execute it. Only inspect it to verify if it's a false positive from software you intentionally installed.")
+            Text(
+                "This file has been flagged as suspicious. DO NOT open, run, or execute it. Only inspect it to verify if it's a false positive from software you intentionally installed."
+            )
         }
         .sheet(isPresented: $showDetails) {
             FindingDetailsSheet(finding: finding)
         }
     }
+
+    // MARK: Private
+
+    @State private var showWarning = false
+    @State private var showDetails = false
+    @State private var isFixing = false
+    @State private var fixResult: String?
 
     private func attemptFix() {
         isFixing = true
@@ -337,11 +344,12 @@ struct FindingRow: View {
     }
 }
 
-// MARK: - Finding Details Sheet
+// MARK: - FindingDetailsSheet
 
 struct FindingDetailsSheet: View {
+    // MARK: Internal
+
     let finding: AuditFinding
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ScrollView {
@@ -428,9 +436,13 @@ struct FindingDetailsSheet: View {
         .frame(width: 600, height: 500)
         .aeroBackground()
     }
+
+    // MARK: Private
+
+    @Environment(\.dismiss) private var dismiss
 }
 
-// MARK: - Detail Section
+// MARK: - DetailSection
 
 struct DetailSection: View {
     let title: String

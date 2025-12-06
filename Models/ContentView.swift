@@ -6,14 +6,14 @@
 import AppKit
 import SwiftUI
 
+// MARK: - ContentView
+
 struct ContentView: View {
+    // MARK: Internal
+
     @EnvironmentObject var subscriptionManager: SubscriptionManager
     @EnvironmentObject var privacyEngine: PrivacyEngine
     @EnvironmentObject var permissionManager: PermissionManager
-    @Environment(\.openWindow) private var openWindow
-
-    @State private var selectedTab: NavigationItem = .dashboard
-    @State private var lastNonPrivacySelection: NavigationItem = .dashboard
 
     var body: some View {
         NavigationSplitView {
@@ -36,6 +36,13 @@ struct ContentView: View {
         }
     }
 
+    // MARK: Private
+
+    @Environment(\.openWindow) private var openWindow
+
+    @State private var selectedTab: NavigationItem = .dashboard
+    @State private var lastNonPrivacySelection: NavigationItem = .dashboard
+
     private func openPrivacyWindow() {
         openWindow(id: "privacy")
 
@@ -45,7 +52,9 @@ struct ContentView: View {
                   let privacyWindow = NSApp.windows.first(where: {
                       $0.title == "Privacy Protection" && $0 != mainWindow
                   })
-            else { return }
+            else {
+                return
+            }
 
             // Calculate offset position from main window
             var newFrame = privacyWindow.frame
@@ -61,6 +70,8 @@ struct ContentView: View {
     }
 }
 
+// MARK: - NavigationItem
+
 enum NavigationItem: String, CaseIterable, Hashable {
     case dashboard = "Dashboard"
     case privacySlider = "Privacy Protection"
@@ -73,39 +84,44 @@ enum NavigationItem: String, CaseIterable, Hashable {
     case recovery = "Recovery Tools"
     case settings = "Settings"
 
+    // MARK: Internal
+
     var icon: String {
         switch self {
-        case .dashboard: return "gauge.with.dots.needle.67percent"
-        case .privacySlider: return "shield.lefthalf.filled"
-        case .auditKing: return "crown.fill"
-        case .hiddenFiles: return "eye.slash"
-        case .telemetry: return "antenna.radiowaves.left.and.right"
-        case .cleanup: return "trash"
-        case .security: return "checkmark.shield"
-        case .network: return "network"
-        case .recovery: return "bandage"
-        case .settings: return "gearshape"
+        case .dashboard: "gauge.with.dots.needle.67percent"
+        case .privacySlider: "shield.lefthalf.filled"
+        case .auditKing: "crown.fill"
+        case .hiddenFiles: "eye.slash"
+        case .telemetry: "antenna.radiowaves.left.and.right"
+        case .cleanup: "trash"
+        case .security: "checkmark.shield"
+        case .network: "network"
+        case .recovery: "bandage"
+        case .settings: "gearshape"
         }
     }
 
     var isPremium: Bool {
         switch self {
-        case .recovery, .network:
-            return true
+        case .recovery,
+             .network:
+            true
         default:
-            return false
+            false
         }
     }
 
     var isEliteOnly: Bool {
         switch self {
         case .auditKing:
-            return true
+            true
         default:
-            return false
+            false
         }
     }
 }
+
+// MARK: - SidebarView
 
 struct SidebarView: View {
     @Binding var selectedTab: NavigationItem
@@ -149,6 +165,8 @@ struct SidebarView: View {
     }
 }
 
+// MARK: - DetailContent
+
 struct DetailContent: View {
     let selectedTab: NavigationItem
     @EnvironmentObject var subscriptionManager: SubscriptionManager
@@ -188,6 +206,8 @@ struct DetailContent: View {
     }
 }
 
+// MARK: - PrivacyPlaceholderView
+
 private struct PrivacyPlaceholderView: View {
     var body: some View {
         VStack(spacing: 12) {
@@ -203,6 +223,8 @@ private struct PrivacyPlaceholderView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
+
+// MARK: - TopBar
 
 private struct TopBar: View {
     let openWindow: OpenWindowAction

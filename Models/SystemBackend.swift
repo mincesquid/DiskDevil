@@ -1,19 +1,20 @@
 import Foundation
 
+// MARK: - NetworkMonitorService
+
 // Lightweight backend services for system data the UI can consume.
 
 final class NetworkMonitorService: ObservableObject {
+    // MARK: Internal
+
     @Published private(set) var connections: [NetworkConnection] = []
     @Published private(set) var bytesIn: Int64 = 0
     @Published private(set) var bytesOut: Int64 = 0
 
-    private var timer: DispatchSourceTimer?
-    private let queue = DispatchQueue(label: "app.diskdevil.networkmonitor")
-    private var lastInterfaceTotals: (Int64, Int64)?
-    private let maxConnections = 80
-
     func start() {
-        guard timer == nil else { return }
+        guard timer == nil else {
+            return
+        }
         bytesIn = 0
         bytesOut = 0
         lastInterfaceTotals = nil
@@ -31,6 +32,13 @@ final class NetworkMonitorService: ObservableObject {
         timer?.cancel()
         timer = nil
     }
+
+    // MARK: Private
+
+    private var timer: DispatchSourceTimer?
+    private let queue = DispatchQueue(label: "app.diskdevil.networkmonitor")
+    private var lastInterfaceTotals: (Int64, Int64)?
+    private let maxConnections = 80
 
     private func poll() {
         let newConnections = fetchConnections()
@@ -74,7 +82,9 @@ final class NetworkMonitorService: ObservableObject {
         var current = Partial()
 
         func commitCurrent() {
-            guard let name = current.name else { return }
+            guard let name = current.name else {
+                return
+            }
 
             let process = current.process ?? "Unknown"
             let proto = current.proto?.replacingOccurrences(of: "P", with: "").uppercased() ?? "TCP"
@@ -96,7 +106,9 @@ final class NetworkMonitorService: ObservableObject {
         }
 
         for line in output.split(separator: "\n") {
-            guard let prefix = line.first else { continue }
+            guard let prefix = line.first else {
+                continue
+            }
             let value = String(line.dropFirst())
 
             switch prefix {
@@ -129,20 +141,20 @@ final class NetworkMonitorService: ObservableObject {
     }
 
     private func parseName(_ name: String) -> (address: String?, port: Int?) {
-        let target: String
-        if let range = name.range(of: "->") {
-            target = String(name[range.upperBound...])
-        } else {
-            target = name
-        }
+        let target: String =
+            if let range = name.range(of: "->") {
+                String(name[range.upperBound...])
+            } else {
+                name
+            }
 
         // Strip any status suffix like " (LISTEN)"
-        let cleaned: String
-        if let paren = target.range(of: " (") {
-            cleaned = String(target[..<paren.lowerBound])
-        } else {
-            cleaned = target
-        }
+        let cleaned: String =
+            if let paren = target.range(of: " (") {
+                String(target[..<paren.lowerBound])
+            } else {
+                target
+            }
 
         guard let colonIndex = cleaned.lastIndex(of: ":") else {
             return (address: cleaned, port: nil)
@@ -158,13 +170,13 @@ final class NetworkMonitorService: ObservableObject {
     private func mapState(_ state: String) -> ConnectionStatus {
         switch state {
         case "ESTABLISHED":
-            return .established
+            .established
         case "LISTEN":
-            return .listening
+            .listening
         case "TIME_WAIT":
-            return .timeWait
+            .timeWait
         default:
-            return .closed
+            .closed
         }
     }
 
@@ -178,7 +190,9 @@ final class NetworkMonitorService: ObservableObject {
 
         for line in output.split(separator: "\n").dropFirst() {
             let parts = line.split(whereSeparator: { $0.isWhitespace })
-            guard parts.count >= 10 else { continue }
+            guard parts.count >= 10 else {
+                continue
+            }
 
             if let iBytes = Int64(parts[6]), let oBytes = Int64(parts[9]) {
                 inbound += iBytes
@@ -206,25 +220,33 @@ final class NetworkMonitorService: ObservableObject {
 
         process.waitUntilExit()
 
-        guard process.terminationStatus == 0 else { return nil }
+        guard process.terminationStatus == 0 else {
+            return nil
+        }
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         return String(data: data, encoding: .utf8)
     }
 }
+
+// MARK: - TelemetryStatus
 
 enum TelemetryStatus {
     case enabled
     case disabled
     case unknown
 
+    // MARK: Internal
+
     var label: String {
         switch self {
-        case .enabled: return "Enabled"
-        case .disabled: return "Disabled"
-        case .unknown: return "Unknown"
+        case .enabled: "Enabled"
+        case .disabled: "Disabled"
+        case .unknown: "Unknown"
         }
     }
 }
+
+// MARK: - TelemetrySetting
 
 struct TelemetrySetting: Identifiable {
     let id = UUID()
@@ -232,6 +254,8 @@ struct TelemetrySetting: Identifiable {
     let status: TelemetryStatus
     let detail: String
 }
+
+// MARK: - TelemetryEvent
 
 struct TelemetryEvent: Identifiable {
     let id = UUID()
@@ -241,15 +265,21 @@ struct TelemetryEvent: Identifiable {
     let size: Int64?
 }
 
+// MARK: - TelemetryService
+
 final class TelemetryService: ObservableObject {
+    // MARK: Internal
+
     @Published private(set) var settings: [TelemetrySetting] = []
     @Published private(set) var recentEvents: [TelemetryEvent] = []
 
     func refresh() {
         Task.detached { [weak self] in
-            guard let self else { return }
-            let settings = self.collectSettings()
-            let events = self.collectEvents()
+            guard let self else {
+                return
+            }
+            let settings = collectSettings()
+            let events = collectEvents()
 
             await MainActor.run {
                 self.settings = settings
@@ -257,6 +287,8 @@ final class TelemetryService: ObservableObject {
             }
         }
     }
+
+    // MARK: Private
 
     private func collectSettings() -> [TelemetrySetting] {
         var results: [TelemetrySetting] = []
@@ -294,14 +326,22 @@ final class TelemetryService: ObservableObject {
         for (label, path) in locations {
             let expanded = NSString(string: path).expandingTildeInPath
             let url = URL(fileURLWithPath: expanded)
-            guard let contents = try? fm.contentsOfDirectory(at: url, includingPropertiesForKeys: Array(resourceKeys), options: [.skipsHiddenFiles]) else {
+            guard let contents = try? fm.contentsOfDirectory(
+                at: url,
+                includingPropertiesForKeys: Array(resourceKeys),
+                options: [.skipsHiddenFiles]
+            ) else {
                 continue
             }
 
             for file in contents {
-                guard let values = try? file.resourceValues(forKeys: resourceKeys), values.isDirectory != true else { continue }
+                guard let values = try? file.resourceValues(forKeys: resourceKeys),
+                      values.isDirectory != true
+                else {
+                    continue
+                }
                 let date = values.contentModificationDate ?? Date()
-                let size = (values.fileSize != nil) ? Int64(values.fileSize!) : nil
+                let size = values.fileSize.map { Int64($0) }
 
                 events.append(TelemetryEvent(
                     title: "\(label): \(file.lastPathComponent)",
@@ -329,7 +369,11 @@ final class TelemetryService: ObservableObject {
     }
 }
 
+// MARK: - SecurityScanner
+
 struct SecurityScanner {
+    // MARK: Internal
+
     func run(progress: @escaping (Double) -> Void) async -> [SecurityIssue] {
         var findings: [SecurityIssue] = []
 
@@ -351,6 +395,8 @@ struct SecurityScanner {
 
         return findings
     }
+
+    // MARK: Private
 
     private func firewallStatus() -> SecurityIssue? {
         guard let output = runCommand("/usr/libexec/ApplicationFirewall/socketfilterfw", ["--getglobalstate"]) else {

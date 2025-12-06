@@ -1,0 +1,89 @@
+# SwiftFormat Configuration for DiskDevil
+# https://github.com/nicklockwood/SwiftFormat
+
+# Swift version
+--swiftversion 5.9
+
+# File options
+--exclude .build,.swiftpm,Package.swift
+
+# Format options
+--allman false
+--binarygrouping 4,8
+--closingparen balanced
+--commas always
+--conflictmarkers reject
+--decimalgrouping 3,6
+--elseposition same-line
+--empty void
+--exponentcase lowercase
+--exponentgrouping disabled
+--fractiongrouping disabled
+--fragment false
+--funcattributes preserve
+--guardelse auto
+--header ignore
+--hexgrouping 4,8
+--hexliteralcase uppercase
+--ifdef indent
+--importgrouping alpha
+--indent 4
+--indentcase false
+--indentstrings false
+--lifecycle
+--linebreaks lf
+--maxwidth 120
+--modifierorder
+--nospaceoperators
+--nowrapoperators
+--octalgrouping 4,8
+--operatorfunc spaced
+--patternlet hoist
+--ranges spaced
+--redundanttype inferred
+--self init-only
+--selfrequired
+--semicolons inline
+--shortoptionals always
+--smarttabs enabled
+--stripunusedargs closure-only
+--structthreshold 0
+--tabwidth unspecified
+--trailingclosures
+--trailingcommas always
+--trimwhitespace always
+--typeattributes preserve
+--typemark "MARK: - %t"
+--varattributes preserve
+--voidtype void
+--wraparguments preserve
+--wrapcollections preserve
+--wrapconditions preserve
+--wrapeffects never
+--wrapenumcases always
+--wrapparameters preserve
+--wrapreturntype preserve
+--wrapternary default
+--wraptypealiases preserve
+--xcodeindentation disabled
+--yodaswap always
+
+# Rules
+--enable blankLineAfterImports
+--enable blankLinesBetweenImports
+--enable blockComments
+--enable docComments
+--enable isEmpty
+--enable markTypes
+--enable organizeDeclarations
+--enable sortDeclarations
+--enable wrapConditionalBodies
+--enable wrapEnumCases
+--enable wrapMultilineConditionalAssignment
+--enable wrapSwitchCases
+
+--disable acronyms
+--disable blankLineAfterSwitchCase
+--disable sortedSwitchCases
+--disable wrapSingleLineComments
+--disable redundantSelf

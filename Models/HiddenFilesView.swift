@@ -6,15 +6,13 @@
 import AppKit
 import SwiftUI
 
+// MARK: - HiddenFilesView
+
 struct HiddenFilesView: View {
+    // MARK: Internal
+
     @EnvironmentObject var subscriptionManager: SubscriptionManager
     @EnvironmentObject var usageLimits: UsageLimits
-    @Environment(\.openWindow) private var openWindow
-
-    @State private var showHiddenFiles = false
-    @State private var currentPath = FileManager.default.homeDirectoryForCurrentUser.path
-    @State private var files: [FileItem] = []
-    @State private var showLimitReached = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -142,6 +140,15 @@ struct HiddenFilesView: View {
         }
     }
 
+    // MARK: Private
+
+    @Environment(\.openWindow) private var openWindow
+
+    @State private var showHiddenFiles = false
+    @State private var currentPath = FileManager.default.homeDirectoryForCurrentUser.path
+    @State private var files: [FileItem] = []
+    @State private var showLimitReached = false
+
     private func loadFiles() {
         let url = URL(fileURLWithPath: currentPath)
         var options: FileManager.DirectoryEnumerationOptions = [.skipsSubdirectoryDescendants]
@@ -186,9 +193,11 @@ struct HiddenFilesView: View {
     }
 }
 
-// MARK: - Usage Limit Banner
+// MARK: - UsageLimitBanner
 
 struct UsageLimitBanner: View {
+    // MARK: Internal
+
     let remaining: Int
     let total: Int
     let featureName: String
@@ -203,7 +212,8 @@ struct UsageLimitBanner: View {
                     .font(.title3)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(remaining > 0 ? "\(remaining) of \(total) \(featureName) remaining today" : "Daily limit reached")
+                    Text(remaining > 0 ? "\(remaining) of \(total) \(featureName) remaining today" :
+                        "Daily limit reached")
                         .font(.headline)
                         .foregroundColor(.white)
 
@@ -245,6 +255,8 @@ struct UsageLimitBanner: View {
         .padding()
     }
 
+    // MARK: Private
+
     private var progressColor: Color {
         let percentage = Double(remaining) / Double(total)
         if percentage > 0.5 {
@@ -257,7 +269,7 @@ struct UsageLimitBanner: View {
     }
 }
 
-// MARK: - Limit Reached Alert
+// MARK: - LimitReachedAlert
 
 struct LimitReachedAlert: View {
     let featureName: String
@@ -326,6 +338,8 @@ struct LimitReachedAlert: View {
     }
 }
 
+// MARK: - BenefitRow
+
 struct BenefitRow: View {
     let icon: String
     let text: String
@@ -342,6 +356,8 @@ struct BenefitRow: View {
         }
     }
 }
+
+// MARK: - FileItem
 
 struct FileItem: Identifiable {
     let id = UUID()

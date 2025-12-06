@@ -5,13 +5,13 @@
 
 import SwiftUI
 
+// MARK: - PrivacySliderView
+
 struct PrivacySliderView: View {
+    // MARK: Internal
+
     @EnvironmentObject var subscriptionManager: SubscriptionManager
     @EnvironmentObject var privacyEngine: PrivacyEngine
-    @Environment(\.openWindow) private var openWindow
-    @Environment(\.dismiss) private var dismiss
-    @State private var selectedLevel: Double = 1
-    @State private var showAppliedConfirmation = false
 
     var body: some View {
         ScrollView {
@@ -190,18 +190,25 @@ struct PrivacySliderView: View {
     }
 
     func canAccessLevel(_ level: Int) -> Bool {
-        return subscriptionManager.hasAccess(to: level)
+        subscriptionManager.hasAccess(to: level)
     }
 
     func levelColor(_ level: Int) -> Color {
         switch level {
-        case 1 ... 3: return .green
-        case 4 ... 6: return .orange
-        case 7 ... 9: return .red
-        case 10: return .purple
-        default: return .gray
+        case 1 ... 3: .green
+        case 4 ... 6: .orange
+        case 7 ... 9: .red
+        case 10: .purple
+        default: .gray
         }
     }
+
+    // MARK: Private
+
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedLevel: Double = 1
+    @State private var showAppliedConfirmation = false
 
     private func openUpgradeWindow() {
         openWindow(id: "upgrade")
@@ -217,6 +224,8 @@ struct PrivacySliderView: View {
         }
     }
 }
+
+// MARK: - LockBanner
 
 struct LockBanner: View {
     let levels: String
@@ -249,6 +258,8 @@ struct LockBanner: View {
     }
 }
 
+// MARK: - LevelBreakdownView
+
 struct LevelBreakdownView: View {
     @EnvironmentObject var subscriptionManager: SubscriptionManager
 
@@ -260,14 +271,54 @@ struct LevelBreakdownView: View {
             VStack(spacing: 8) {
                 LevelRow(level: 1, name: "Relaxed", description: "Basic trackers, ad networks", locked: false)
                 LevelRow(level: 2, name: "Aware", description: "Third-party analytics, data collectors", locked: false)
-                LevelRow(level: 3, name: "Cautious", description: "Marketing, fingerprinting, suspicious domains", locked: false)
-                LevelRow(level: 4, name: "Protected", description: "Apple telemetry (diagnostics, usage)", locked: subscriptionManager.tier == .free)
-                LevelRow(level: 5, name: "Hardened", description: "Apple analytics daemons, cloud telemetry", locked: subscriptionManager.tier == .free)
-                LevelRow(level: 6, name: "Isolated", description: "Siri data, Spotlight suggestions", locked: subscriptionManager.tier == .free)
-                LevelRow(level: 7, name: "Military", description: "Deep packet inspection, military-grade firewall", locked: subscriptionManager.tier == .free)
-                LevelRow(level: 8, name: "Cloaked", description: "MAC spoofing, network cloaking, VM isolation", locked: subscriptionManager.tier == .free)
-                LevelRow(level: 9, name: "Offensive", description: "Honeypots, active response, deception tactics", locked: subscriptionManager.tier == .free)
-                LevelRow(level: 10, name: "MAXIMUM", description: "Zero-trust architecture, complete isolation", locked: subscriptionManager.tier != .elite)
+                LevelRow(
+                    level: 3,
+                    name: "Cautious",
+                    description: "Marketing, fingerprinting, suspicious domains",
+                    locked: false
+                )
+                LevelRow(
+                    level: 4,
+                    name: "Protected",
+                    description: "Apple telemetry (diagnostics, usage)",
+                    locked: subscriptionManager.tier == .free
+                )
+                LevelRow(
+                    level: 5,
+                    name: "Hardened",
+                    description: "Apple analytics daemons, cloud telemetry",
+                    locked: subscriptionManager.tier == .free
+                )
+                LevelRow(
+                    level: 6,
+                    name: "Isolated",
+                    description: "Siri data, Spotlight suggestions",
+                    locked: subscriptionManager.tier == .free
+                )
+                LevelRow(
+                    level: 7,
+                    name: "Military",
+                    description: "Deep packet inspection, military-grade firewall",
+                    locked: subscriptionManager.tier == .free
+                )
+                LevelRow(
+                    level: 8,
+                    name: "Cloaked",
+                    description: "MAC spoofing, network cloaking, VM isolation",
+                    locked: subscriptionManager.tier == .free
+                )
+                LevelRow(
+                    level: 9,
+                    name: "Offensive",
+                    description: "Honeypots, active response, deception tactics",
+                    locked: subscriptionManager.tier == .free
+                )
+                LevelRow(
+                    level: 10,
+                    name: "MAXIMUM",
+                    description: "Zero-trust architecture, complete isolation",
+                    locked: subscriptionManager.tier != .elite
+                )
             }
         }
         .padding()
@@ -276,11 +327,23 @@ struct LevelBreakdownView: View {
     }
 }
 
+// MARK: - LevelRow
+
 struct LevelRow: View {
     let level: Int
     let name: String
     let description: String
     let locked: Bool
+
+    var levelColor: Color {
+        switch level {
+        case 1 ... 3: .green
+        case 4 ... 6: .orange
+        case 7 ... 9: .red
+        case 10: .purple
+        default: .gray
+        }
+    }
 
     var body: some View {
         HStack {
@@ -310,17 +373,9 @@ struct LevelRow: View {
         .opacity(locked ? 0.6 : 1.0)
         .padding(.vertical, 4)
     }
-
-    var levelColor: Color {
-        switch level {
-        case 1 ... 3: return .green
-        case 4 ... 6: return .orange
-        case 7 ... 9: return .red
-        case 10: return .purple
-        default: return .gray
-        }
-    }
 }
+
+// MARK: - StatisticsCard
 
 struct StatisticsCard: View {
     @EnvironmentObject var privacyEngine: PrivacyEngine
@@ -367,6 +422,8 @@ struct StatisticsCard: View {
         .cornerRadius(12)
     }
 }
+
+// MARK: - StatItem
 
 struct StatItem: View {
     let title: String

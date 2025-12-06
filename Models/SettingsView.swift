@@ -5,16 +5,22 @@
 
 import SwiftUI
 
+// MARK: - SettingsView
+
 struct SettingsView: View {
+    // MARK: Internal
+
     @EnvironmentObject var subscriptionManager: SubscriptionManager
     @EnvironmentObject var privacyEngine: PrivacyEngine
     @EnvironmentObject var permissionManager: PermissionManager
-    @Environment(\.openWindow) private var openWindow
 
-    @AppStorage("launchAtLogin") private var launchAtLogin = false
-    @AppStorage("showInMenuBar") private var showInMenuBar = true
-    @AppStorage("autoUpdate") private var autoUpdate = true
-    @AppStorage("notificationsEnabled") private var notificationsEnabled = true
+    var tierColor: Color {
+        switch subscriptionManager.tier {
+        case .free: .gray
+        case .premium: .orange
+        case .elite: .purple
+        }
+    }
 
     var body: some View {
         ScrollView {
@@ -73,9 +79,11 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Current Level")
                                 .font(.headline)
-                            Text("Level \(privacyEngine.currentLevel) - \(privacyEngine.levelNames[privacyEngine.currentLevel] ?? "")")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                            Text(
+                                "Level \(privacyEngine.currentLevel) - \(privacyEngine.levelNames[privacyEngine.currentLevel] ?? "")"
+                            )
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                         }
                         Spacer()
                         Button("Configure") {
@@ -183,25 +191,32 @@ struct SettingsView: View {
         .aeroBackground()
     }
 
-    var tierColor: Color {
-        switch subscriptionManager.tier {
-        case .free: return .gray
-        case .premium: return .orange
-        case .elite: return .purple
-        }
-    }
+    // MARK: Private
+
+    @Environment(\.openWindow) private var openWindow
+
+    @AppStorage("launchAtLogin") private var launchAtLogin = false
+    @AppStorage("showInMenuBar") private var showInMenuBar = true
+    @AppStorage("autoUpdate") private var autoUpdate = true
+    @AppStorage("notificationsEnabled") private var notificationsEnabled = true
 }
 
+// MARK: - SettingsSection
+
 struct SettingsSection<Content: View>: View {
-    let title: String
-    let icon: String
-    let content: Content
+    // MARK: Lifecycle
 
     init(title: String, icon: String, @ViewBuilder content: () -> Content) {
         self.title = title
         self.icon = icon
         self.content = content()
     }
+
+    // MARK: Internal
+
+    let title: String
+    let icon: String
+    let content: Content
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -221,6 +236,8 @@ struct SettingsSection<Content: View>: View {
         .glassCard()
     }
 }
+
+// MARK: - SettingsToggle
 
 struct SettingsToggle: View {
     let title: String
@@ -243,6 +260,8 @@ struct SettingsToggle: View {
         .padding(.vertical, 8)
     }
 }
+
+// MARK: - PermissionRow
 
 struct PermissionRow: View {
     let title: String

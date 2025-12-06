@@ -5,10 +5,13 @@
 
 import SwiftUI
 
+// MARK: - NetworkMonitorView
+
 struct NetworkMonitorView: View {
+    // MARK: Internal
+
     @EnvironmentObject var subscriptionManager: SubscriptionManager
     @EnvironmentObject var monitor: NetworkMonitorService
-    @State private var isMonitoring = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -110,6 +113,10 @@ struct NetworkMonitorView: View {
         }
     }
 
+    // MARK: Private
+
+    @State private var isMonitoring = false
+
     private func startMonitoring() {
         monitor.start()
     }
@@ -119,21 +126,27 @@ struct NetworkMonitorView: View {
     }
 }
 
+// MARK: - ConnectionStatus
+
 enum ConnectionStatus: String {
     case established = "Established"
     case listening = "Listening"
     case closed = "Closed"
     case timeWait = "Time Wait"
 
+    // MARK: Internal
+
     var color: Color {
         switch self {
-        case .established: return .green
-        case .listening: return .blue
-        case .closed: return .gray
-        case .timeWait: return .orange
+        case .established: .green
+        case .listening: .blue
+        case .closed: .gray
+        case .timeWait: .orange
         }
     }
 }
+
+// MARK: - NetworkConnection
 
 struct NetworkConnection: Identifiable {
     let id = UUID()
@@ -144,6 +157,8 @@ struct NetworkConnection: Identifiable {
     let status: ConnectionStatus
     let timestamp = Date()
 }
+
+// MARK: - NetworkConnectionRow
 
 struct NetworkConnectionRow: View {
     let connection: NetworkConnection
@@ -177,7 +192,11 @@ struct NetworkConnectionRow: View {
     }
 }
 
+// MARK: - TrafficCard
+
 struct TrafficCard: View {
+    // MARK: Internal
+
     let title: String
     var bytes: Int64?
     var value: String?
@@ -190,10 +209,10 @@ struct TrafficCard: View {
                 .font(.title2)
                 .foregroundColor(color)
 
-            if let bytes = bytes {
+            if let bytes {
                 Text(formatBytes(bytes))
                     .font(.headline)
-            } else if let value = value {
+            } else if let value {
                 Text(value)
                     .font(.headline)
             }
@@ -204,6 +223,8 @@ struct TrafficCard: View {
         }
         .frame(maxWidth: .infinity)
     }
+
+    // MARK: Private
 
     private func formatBytes(_ bytes: Int64) -> String {
         let formatter = ByteCountFormatter()

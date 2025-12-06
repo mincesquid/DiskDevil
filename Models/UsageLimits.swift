@@ -8,71 +8,18 @@ import Foundation
 import SwiftUI
 
 class UsageLimits: ObservableObject {
-    // Storage keys
-    private let hiddenFilesRevealCountKey = "usage.hiddenFiles.count"
-    private let hiddenFilesResetDateKey = "usage.hiddenFiles.resetDate"
-    private let networkMonitorCountKey = "usage.networkMonitor.count"
-    private let networkMonitorResetDateKey = "usage.networkMonitor.resetDate"
-    private let securityScanCountKey = "usage.securityScan.count"
-    private let securityScanResetDateKey = "usage.securityScan.resetDate"
-
-    @Published var hiddenFilesRevealsRemaining: Int = 3
-    @Published var networkMonitorUsesRemaining: Int = 3
-    @Published var securityScansRemaining: Int = 2
-
-    private let defaults = UserDefaults.standard
+    // MARK: Lifecycle
 
     init() {
         resetIfNeeded()
         loadUsage()
     }
 
-    // MARK: - Daily Reset Logic
+    // MARK: Internal
 
-    private func resetIfNeeded() {
-        let calendar = Calendar.current
-
-        // Reset hidden files if needed
-        if let lastReset = defaults.object(forKey: hiddenFilesResetDateKey) as? Date {
-            if !calendar.isDateInToday(lastReset) {
-                defaults.set(0, forKey: hiddenFilesRevealCountKey)
-                defaults.set(Date(), forKey: hiddenFilesResetDateKey)
-            }
-        } else {
-            defaults.set(Date(), forKey: hiddenFilesResetDateKey)
-        }
-
-        // Reset network monitor if needed
-        if let lastReset = defaults.object(forKey: networkMonitorResetDateKey) as? Date {
-            if !calendar.isDateInToday(lastReset) {
-                defaults.set(0, forKey: networkMonitorCountKey)
-                defaults.set(Date(), forKey: networkMonitorResetDateKey)
-            }
-        } else {
-            defaults.set(Date(), forKey: networkMonitorResetDateKey)
-        }
-
-        // Reset security scans if needed
-        if let lastReset = defaults.object(forKey: securityScanResetDateKey) as? Date {
-            if !calendar.isDateInToday(lastReset) {
-                defaults.set(0, forKey: securityScanCountKey)
-                defaults.set(Date(), forKey: securityScanResetDateKey)
-            }
-        } else {
-            defaults.set(Date(), forKey: securityScanResetDateKey)
-        }
-    }
-
-    private func loadUsage() {
-        let hiddenFilesUsed = defaults.integer(forKey: hiddenFilesRevealCountKey)
-        hiddenFilesRevealsRemaining = max(0, 3 - hiddenFilesUsed)
-
-        let networkUsed = defaults.integer(forKey: networkMonitorCountKey)
-        networkMonitorUsesRemaining = max(0, 3 - networkUsed)
-
-        let scansUsed = defaults.integer(forKey: securityScanCountKey)
-        securityScansRemaining = max(0, 2 - scansUsed)
-    }
+    @Published var hiddenFilesRevealsRemaining = 3
+    @Published var networkMonitorUsesRemaining = 3
+    @Published var securityScansRemaining = 2
 
     // MARK: - Usage Tracking
 
@@ -137,5 +84,64 @@ class UsageLimits: ObservableObject {
         hiddenFilesRevealsRemaining = .max
         networkMonitorUsesRemaining = .max
         securityScansRemaining = .max
+    }
+
+    // MARK: Private
+
+    // Storage keys
+    private let hiddenFilesRevealCountKey = "usage.hiddenFiles.count"
+    private let hiddenFilesResetDateKey = "usage.hiddenFiles.resetDate"
+    private let networkMonitorCountKey = "usage.networkMonitor.count"
+    private let networkMonitorResetDateKey = "usage.networkMonitor.resetDate"
+    private let securityScanCountKey = "usage.securityScan.count"
+    private let securityScanResetDateKey = "usage.securityScan.resetDate"
+
+    private let defaults = UserDefaults.standard
+
+    // MARK: - Daily Reset Logic
+
+    private func resetIfNeeded() {
+        let calendar = Calendar.current
+
+        // Reset hidden files if needed
+        if let lastReset = defaults.object(forKey: hiddenFilesResetDateKey) as? Date {
+            if !calendar.isDateInToday(lastReset) {
+                defaults.set(0, forKey: hiddenFilesRevealCountKey)
+                defaults.set(Date(), forKey: hiddenFilesResetDateKey)
+            }
+        } else {
+            defaults.set(Date(), forKey: hiddenFilesResetDateKey)
+        }
+
+        // Reset network monitor if needed
+        if let lastReset = defaults.object(forKey: networkMonitorResetDateKey) as? Date {
+            if !calendar.isDateInToday(lastReset) {
+                defaults.set(0, forKey: networkMonitorCountKey)
+                defaults.set(Date(), forKey: networkMonitorResetDateKey)
+            }
+        } else {
+            defaults.set(Date(), forKey: networkMonitorResetDateKey)
+        }
+
+        // Reset security scans if needed
+        if let lastReset = defaults.object(forKey: securityScanResetDateKey) as? Date {
+            if !calendar.isDateInToday(lastReset) {
+                defaults.set(0, forKey: securityScanCountKey)
+                defaults.set(Date(), forKey: securityScanResetDateKey)
+            }
+        } else {
+            defaults.set(Date(), forKey: securityScanResetDateKey)
+        }
+    }
+
+    private func loadUsage() {
+        let hiddenFilesUsed = defaults.integer(forKey: hiddenFilesRevealCountKey)
+        hiddenFilesRevealsRemaining = max(0, 3 - hiddenFilesUsed)
+
+        let networkUsed = defaults.integer(forKey: networkMonitorCountKey)
+        networkMonitorUsesRemaining = max(0, 3 - networkUsed)
+
+        let scansUsed = defaults.integer(forKey: securityScanCountKey)
+        securityScansRemaining = max(0, 2 - scansUsed)
     }
 }

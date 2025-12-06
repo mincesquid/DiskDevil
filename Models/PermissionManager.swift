@@ -7,12 +7,16 @@ import AppKit
 import Foundation
 
 class PermissionManager: ObservableObject {
-    @Published var hasFullDiskAccess: Bool = false
-    @Published var hasNetworkExtension: Bool = false
+    // MARK: Lifecycle
 
     init() {
         checkPermissions()
     }
+
+    // MARK: Internal
+
+    @Published var hasFullDiskAccess = false
+    @Published var hasNetworkExtension = false
 
     func checkPermissions() {
         checkFullDiskAccess()

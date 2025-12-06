@@ -1,13 +1,15 @@
 import AppKit
 import SwiftUI
 
+// MARK: - MenuBarStatusView
+
 struct MenuBarStatusView: View {
+    // MARK: Internal
+
     @EnvironmentObject var subscriptionManager: SubscriptionManager
     @EnvironmentObject var privacyEngine: PrivacyEngine
     @EnvironmentObject var networkMonitor: NetworkMonitorService
     @EnvironmentObject var permissionManager: PermissionManager
-
-    @State private var isMonitoring = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -37,6 +39,18 @@ struct MenuBarStatusView: View {
         }
         .onChange(of: isMonitoring) { active in
             active ? networkMonitor.start() : networkMonitor.stop()
+        }
+    }
+
+    // MARK: Private
+
+    @State private var isMonitoring = true
+
+    private var tierColor: Color {
+        switch subscriptionManager.tier {
+        case .free: .gray
+        case .premium: .orange
+        case .elite: .purple
         }
     }
 
@@ -124,15 +138,9 @@ struct MenuBarStatusView: View {
             }
         }
     }
-
-    private var tierColor: Color {
-        switch subscriptionManager.tier {
-        case .free: return .gray
-        case .premium: return .orange
-        case .elite: return .purple
-        }
-    }
 }
+
+// MARK: - StatChip
 
 private struct StatChip: View {
     let label: String
@@ -148,6 +156,8 @@ private struct StatChip: View {
             .cornerRadius(6)
     }
 }
+
+// MARK: - PermissionChip
 
 private struct PermissionChip: View {
     let title: String

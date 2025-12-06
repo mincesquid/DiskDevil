@@ -6,13 +6,10 @@
 import AppKit
 import SwiftUI
 
+// MARK: - CleanupView
+
 struct CleanupView: View {
-    @State private var categories: [CleanupCategoryState] = CleanupCategoryKind.allCases.map { CleanupCategoryState(kind: $0) }
-    @State private var selectedItems: Set<UUID> = []
-    @State private var isScanning = false
-    @State private var isCleaning = false
-    @State private var userMessage: String?
-    @State private var alert: CleanupAlert?
+    // MARK: Internal
 
     var body: some View {
         VStack(spacing: 0) {
@@ -73,6 +70,30 @@ struct CleanupView: View {
                 message: Text(alert.message),
                 dismissButton: .default(Text("OK"))
             )
+        }
+    }
+
+    // MARK: Private
+
+    @State private var categories: [CleanupCategoryState] = CleanupCategoryKind.allCases
+        .map { CleanupCategoryState(kind: $0) }
+    @State private var selectedItems: Set<UUID> = []
+    @State private var isScanning = false
+    @State private var isCleaning = false
+    @State private var userMessage: String?
+    @State private var alert: CleanupAlert?
+
+    private var totalDiscoveredBytes: Int64 {
+        categories.reduce(0) { partial, category in
+            partial + category.totalBytes
+        }
+    }
+
+    private var selectedBytes: Int64 {
+        categories.reduce(0) { partial, category in
+            partial + category.files
+                .filter { selectedItems.contains($0.id) }
+                .reduce(0) { $0 + $1.size }
         }
     }
 
@@ -137,17 +158,12 @@ struct CleanupView: View {
         }
     }
 
-    private var totalDiscoveredBytes: Int64 {
-        categories.reduce(0) { partial, category in
-            partial + category.totalBytes
-        }
-    }
-
-    private var selectedBytes: Int64 {
-        categories.reduce(0) { partial, category in
-            partial + category.files
-                .filter { selectedItems.contains($0.id) }
-                .reduce(0) { $0 + $1.size }
+    private static func deleteItem(at url: URL) throws {
+        let fm = FileManager.default
+        do {
+            try fm.trashItem(at: url, resultingItemURL: nil)
+        } catch {
+            try fm.removeItem(at: url)
         }
     }
 
@@ -209,12 +225,23 @@ struct CleanupView: View {
     private func collectEntries(at url: URL, limit: Int) throws -> [CleanupFile] {
         let fm = FileManager.default
         var entries: [CleanupFile] = []
-        let resources: Set<URLResourceKey> = [.isDirectoryKey, .fileSizeKey, .totalFileAllocatedSizeKey, .contentModificationDateKey]
+        let resources: Set<URLResourceKey> = [
+            .isDirectoryKey,
+            .fileSizeKey,
+            .totalFileAllocatedSizeKey,
+            .contentModificationDateKey,
+        ]
 
-        if let contents = try? fm.contentsOfDirectory(at: url, includingPropertiesForKeys: Array(resources), options: [.skipsPackageDescendants]) {
+        if let contents = try? fm.contentsOfDirectory(
+            at: url,
+            includingPropertiesForKeys: Array(resources),
+            options: [.skipsPackageDescendants]
+        ) {
             for child in contents {
                 let size = sizeOfItem(at: child)
-                guard size > 0 else { continue }
+                guard size > 0 else {
+                    continue
+                }
                 let resourceValues = try? child.resourceValues(forKeys: resources)
                 let date = resourceValues?.contentModificationDate
 
@@ -230,7 +257,9 @@ struct CleanupView: View {
             }
         } else {
             let size = sizeOfItem(at: url)
-            guard size > 0 else { return [] }
+            guard size > 0 else {
+                return []
+            }
             let resourceValues = try? url.resourceValues(forKeys: resources)
             entries.append(CleanupFile(
                 url: url,
@@ -262,9 +291,16 @@ struct CleanupView: View {
         var total: Int64 = 0
         let resourceKeys: Set<URLResourceKey> = [.isDirectoryKey, .fileSizeKey, .totalFileAllocatedSizeKey]
 
-        if let enumerator = fm.enumerator(at: url, includingPropertiesForKeys: Array(resourceKeys), options: [.skipsHiddenFiles], errorHandler: nil) {
+        if let enumerator = fm.enumerator(
+            at: url,
+            includingPropertiesForKeys: Array(resourceKeys),
+            options: [.skipsHiddenFiles],
+            errorHandler: nil
+        ) {
             for case let fileURL as URL in enumerator {
-                guard let values = try? fileURL.resourceValues(forKeys: resourceKeys) else { continue }
+                guard let values = try? fileURL.resourceValues(forKeys: resourceKeys) else {
+                    continue
+                }
                 if values.isDirectory == true {
                     continue
                 }
@@ -331,7 +367,10 @@ struct CleanupView: View {
                 if errors.isEmpty {
                     alert = CleanupAlert(title: "Cleanup Complete", message: "Removed \(targets.count) item(s).")
                 } else {
-                    alert = CleanupAlert(title: "Cleanup Finished with Warnings", message: errors.joined(separator: "\n"))
+                    alert = CleanupAlert(
+                        title: "Cleanup Finished with Warnings",
+                        message: errors.joined(separator: "\n")
+                    )
                 }
                 scanAllCategories()
             }
@@ -377,18 +416,13 @@ struct CleanupView: View {
     private func formatBytes(_ bytes: Int64) -> String {
         ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
     }
-
-    private static func deleteItem(at url: URL) throws {
-        let fm = FileManager.default
-        do {
-            try fm.trashItem(at: url, resultingItemURL: nil)
-        } catch {
-            try fm.removeItem(at: url)
-        }
-    }
 }
 
+// MARK: - CleanupCategoryCard
+
 private struct CleanupCategoryCard: View {
+    // MARK: Internal
+
     let category: CleanupCategoryState
     let isScanning: Bool
     let selectedItems: Set<UUID>
@@ -461,24 +495,28 @@ private struct CleanupCategoryCard: View {
         .glassCard()
     }
 
+    // MARK: Private
+
     private var statusText: String {
         switch category.status {
-        case .pending: return "Pending"
-        case .scanning: return "Scanning"
-        case .completed: return "Ready"
-        case .error: return "Warning"
+        case .pending: "Pending"
+        case .scanning: "Scanning"
+        case .completed: "Ready"
+        case .error: "Warning"
         }
     }
 
     private var statusColor: Color {
         switch category.status {
-        case .pending: return .gray
-        case .scanning: return .blue
-        case .completed: return .green
-        case .error: return .red
+        case .pending: .gray
+        case .scanning: .blue
+        case .completed: .green
+        case .error: .red
         }
     }
 }
+
+// MARK: - CleanupFileRow
 
 private struct CleanupFileRow: View {
     let file: CleanupFile
@@ -523,11 +561,15 @@ private struct CleanupFileRow: View {
     }
 }
 
+// MARK: - CleanupAlert
+
 private struct CleanupAlert: Identifiable {
     let id = UUID()
     let title: String
     let message: String
 }
+
+// MARK: - CleanupCategoryState
 
 private struct CleanupCategoryState: Identifiable {
     let id = UUID()
@@ -538,6 +580,8 @@ private struct CleanupCategoryState: Identifiable {
     var message: String?
     var lastScan: Date?
 }
+
+// MARK: - CleanupFile
 
 private struct CleanupFile: Identifiable {
     let id = UUID()
@@ -550,12 +594,16 @@ private struct CleanupFile: Identifiable {
     }
 }
 
+// MARK: - CleanupStatus
+
 private enum CleanupStatus {
     case pending
     case scanning
     case completed
     case error
 }
+
+// MARK: - CleanupCategoryKind
 
 private enum CleanupCategoryKind: String, CaseIterable {
     case caches
@@ -564,81 +612,85 @@ private enum CleanupCategoryKind: String, CaseIterable {
     case temporary
     case trash
 
+    // MARK: Internal
+
     var title: String {
         switch self {
-        case .caches: return "Caches"
-        case .logs: return "Logs"
-        case .downloads: return "Downloads"
-        case .temporary: return "Temporary Files"
-        case .trash: return "Trash"
+        case .caches: "Caches"
+        case .logs: "Logs"
+        case .downloads: "Downloads"
+        case .temporary: "Temporary Files"
+        case .trash: "Trash"
         }
     }
 
     var description: String {
         switch self {
         case .caches:
-            return "Application caches, derived data, and Safari leftovers"
+            "Application caches, derived data, and Safari leftovers"
         case .logs:
-            return "System/Application logs and diagnostics"
+            "System/Application logs and diagnostics"
         case .downloads:
-            return "Large, stale files inside Downloads"
+            "Large, stale files inside Downloads"
         case .temporary:
-            return "tmp contents and Xcode derived data"
+            "tmp contents and Xcode derived data"
         case .trash:
-            return "Files still in your Trash"
+            "Files still in your Trash"
         }
     }
 
     var icon: String {
         switch self {
-        case .caches: return "folder.fill"
-        case .logs: return "doc.text.fill"
-        case .downloads: return "arrow.down.circle.fill"
-        case .temporary: return "clock.arrow.circlepath"
-        case .trash: return "trash.fill"
+        case .caches: "folder.fill"
+        case .logs: "doc.text.fill"
+        case .downloads: "arrow.down.circle.fill"
+        case .temporary: "clock.arrow.circlepath"
+        case .trash: "trash.fill"
         }
     }
 
     var color: Color {
         switch self {
-        case .caches: return .blue
-        case .logs: return .orange
-        case .downloads: return .green
-        case .temporary: return .purple
-        case .trash: return .red
+        case .caches: .blue
+        case .logs: .orange
+        case .downloads: .green
+        case .temporary: .purple
+        case .trash: .red
         }
     }
 
     var locations: [CleanupLocation] {
         switch self {
         case .caches:
-            return [
+            [
                 CleanupLocation(path: "~/Library/Caches", limit: 40),
                 CleanupLocation(path: "/Library/Caches", limit: 20),
                 CleanupLocation(path: "~/Library/Developer/Xcode/DerivedData", limit: 20),
             ]
         case .logs:
-            return [
+            [
                 CleanupLocation(path: "~/Library/Logs", limit: 40),
                 CleanupLocation(path: "/Library/Logs", limit: 20),
                 CleanupLocation(path: "~/Library/DiagnosticReports", limit: 20),
             ]
         case .downloads:
-            return [
+            [
                 CleanupLocation(path: "~/Downloads", limit: 40),
             ]
         case .temporary:
-            return [
+            [
                 CleanupLocation(path: NSTemporaryDirectory(), limit: 40),
                 CleanupLocation(path: "/tmp", limit: 20),
             ]
         case .trash:
-            return [
+            [
                 CleanupLocation(path: "~/.Trash", limit: 60),
             ]
         }
     }
 }
+
+// MARK: - CleanupLocation
 
 private struct CleanupLocation {
     let path: String

@@ -1,5 +1,7 @@
 import SwiftUI
 
+// MARK: - AeroTheme
+
 enum AeroTheme {
     static let background = LinearGradient(
         colors: [
@@ -29,6 +31,8 @@ enum AeroTheme {
     static let fontName = "SF Pro Display"
     static let baseFont: Font = .system(size: 15, weight: .regular, design: .default)
 }
+
+// MARK: - GlassCard
 
 struct GlassCard: ViewModifier {
     func body(content: Content) -> some View {

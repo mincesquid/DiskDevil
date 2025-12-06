@@ -7,13 +7,11 @@
 
 import SwiftUI
 
+// MARK: - DiskDevilApp
+
 @main
 struct DiskDevilApp: App {
-    @StateObject private var subscriptionManager = SubscriptionManager()
-    @StateObject private var privacyEngine = PrivacyEngine()
-    @StateObject private var permissionManager = PermissionManager()
-    @StateObject private var networkMonitor = NetworkMonitorService()
-    @StateObject private var usageLimits = UsageLimits()
+    // MARK: Internal
 
     var body: some Scene {
         WindowGroup {
@@ -84,7 +82,17 @@ struct DiskDevilApp: App {
         }
         .menuBarExtraStyle(.window)
     }
+
+    // MARK: Private
+
+    @StateObject private var subscriptionManager = SubscriptionManager()
+    @StateObject private var privacyEngine = PrivacyEngine()
+    @StateObject private var permissionManager = PermissionManager()
+    @StateObject private var networkMonitor = NetworkMonitorService()
+    @StateObject private var usageLimits = UsageLimits()
 }
+
+// MARK: - AppCommands
 
 struct AppCommands: Commands {
     var body: some Commands {

@@ -7,12 +7,7 @@
 import SwiftUI
 
 struct AuditKingView: View {
-    @State private var isAuditing = false
-    @State private var auditProgress: Double = 0
-    @State private var currentPhase: AuditPhase = .idle
-    @State private var findings: [AuditFinding] = []
-    @State private var auditComplete = false
-    @State private var threatLevel: ThreatLevel = .unknown
+    // MARK: Internal
 
     var body: some View {
         ScrollView {
@@ -174,6 +169,15 @@ struct AuditKingView: View {
         }
         .aeroBackground()
     }
+
+    // MARK: Private
+
+    @State private var isAuditing = false
+    @State private var auditProgress: Double = 0
+    @State private var currentPhase: AuditPhase = .idle
+    @State private var findings: [AuditFinding] = []
+    @State private var auditComplete = false
+    @State private var threatLevel: ThreatLevel = .unknown
 
     private func startAudit() {
         isAuditing = true

@@ -5,16 +5,13 @@
 
 import SwiftUI
 
+// MARK: - UpgradeView
+
 struct UpgradeView: View {
+    // MARK: Internal
+
     @EnvironmentObject var subscriptionManager: SubscriptionManager
     @EnvironmentObject var usageLimits: UsageLimits
-    @Environment(\.openWindow) private var openWindow
-    @State private var selectedPlan: SubscriptionTier = .premium
-    @State private var isAnnual = true
-    @State private var isPurchasing = false
-    @State private var showError = false
-    @State private var errorMessage = ""
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ScrollView {
@@ -150,11 +147,13 @@ struct UpgradeView: View {
                 .foregroundColor(.blue)
 
                 // Terms
-                Text("Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.")
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                Text(
+                    "Subscription automatically renews unless cancelled at least 24 hours before the end of the current period."
+                )
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.8))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
 
                 Spacer()
             }
@@ -167,6 +166,16 @@ struct UpgradeView: View {
             Text(errorMessage)
         }
     }
+
+    // MARK: Private
+
+    @Environment(\.openWindow) private var openWindow
+    @State private var selectedPlan: SubscriptionTier = .premium
+    @State private var isAnnual = true
+    @State private var isPurchasing = false
+    @State private var showError = false
+    @State private var errorMessage = ""
+    @Environment(\.dismiss) private var dismiss
 
     private func purchase() {
         isPurchasing = true
@@ -200,6 +209,8 @@ struct UpgradeView: View {
     }
 }
 
+// MARK: - PlanCard
+
 struct PlanCard: View {
     let tier: SubscriptionTier
     let monthlyPrice: String
@@ -212,16 +223,16 @@ struct PlanCard: View {
 
     var tierColor: Color {
         switch tier {
-        case .free: return .gray
-        case .premium: return .orange
-        case .elite: return .purple
+        case .free: .gray
+        case .premium: .orange
+        case .elite: .purple
         }
     }
 
     var body: some View {
         Button(action: action) {
             VStack(spacing: 16) {
-                if let badge = badge {
+                if let badge {
                     Text(badge)
                         .font(.caption)
                         .fontWeight(.bold)
@@ -280,7 +291,7 @@ struct PlanCard: View {
     }
 }
 
-// MARK: - Limitations Card
+// MARK: - LimitationsCard
 
 struct LimitationsCard: View {
     @ObservedObject var usageLimits: UsageLimits
@@ -343,6 +354,8 @@ struct LimitationsCard: View {
     }
 }
 
+// MARK: - LimitationRow
+
 struct LimitationRow: View {
     let icon: String
     let text: String
@@ -361,11 +374,12 @@ struct LimitationRow: View {
     }
 }
 
-// MARK: - Premium Upgrade Placeholder
+// MARK: - PremiumUpgradeView
 
 struct PremiumUpgradeView: View {
+    // MARK: Internal
+
     let feature: String
-    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(spacing: 24) {
@@ -395,11 +409,18 @@ struct PremiumUpgradeView: View {
         }
         .padding()
     }
+
+    // MARK: Private
+
+    @Environment(\.openWindow) private var openWindow
 }
 
+// MARK: - EliteUpgradeView
+
 struct EliteUpgradeView: View {
+    // MARK: Internal
+
     let feature: String
-    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(spacing: 24) {
@@ -462,7 +483,13 @@ struct EliteUpgradeView: View {
         }
         .padding()
     }
+
+    // MARK: Private
+
+    @Environment(\.openWindow) private var openWindow
 }
+
+// MARK: - FeatureBullet
 
 struct FeatureBullet: View {
     let icon: String

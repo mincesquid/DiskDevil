@@ -1,0 +1,64 @@
+# Git attributes for DiskDevil
+# https://git-scm.com/docs/gitattributes
+
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Swift source files
+*.swift text diff=swift eol=lf
+
+# Property lists
+*.plist text eol=lf
+*.xcconfig text eol=lf
+
+# Package manifest
+Package.swift text diff=swift eol=lf
+Package.resolved text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+
+# Markdown
+*.md text diff=markdown eol=lf
+
+# YAML/JSON configs
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+
+# Xcode project files
+*.pbxproj text eol=lf merge=union
+*.xcworkspacedata text eol=lf
+*.xcscheme text eol=lf
+
+# Binary files - do not diff or merge
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+*.dmg binary
+
+# Entitlements
+*.entitlements text eol=lf
+
+# Storyboards and XIBs (XML)
+*.storyboard text eol=lf
+*.xib text eol=lf
+
+# Asset catalogs
+*.xcassets binary
+
+# macOS specific
+.DS_Store binary -diff
+
+# Build artifacts - don't track
+*.app binary
+*.framework binary
+*.dylib binary
+*.a binary
+*.o binary

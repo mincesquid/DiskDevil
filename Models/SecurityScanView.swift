@@ -5,6 +5,8 @@
 
 import SwiftUI
 
+// MARK: - SecurityScanView
+
 struct SecurityScanView: View {
     private let scanner = SecurityScanner()
     @State private var isScanning = false
@@ -92,7 +94,7 @@ struct SecurityScanView: View {
             }
 
             // Results
-            if securityIssues.isEmpty && !isScanning {
+            if securityIssues.isEmpty, !isScanning {
                 VStack(spacing: 12) {
                     Image(systemName: scanComplete ? "checkmark.shield.fill" : "shield")
                         .font(.system(size: 40))
@@ -100,7 +102,8 @@ struct SecurityScanView: View {
                     Text(scanComplete ? "No threats detected!" : "Ready to scan")
                         .font(.headline)
                         .foregroundColor(.white)
-                    Text(scanComplete ? "Your system appears to be secure" : "Start a scan to check for security issues")
+                    Text(scanComplete ? "Your system appears to be secure" :
+                        "Start a scan to check for security issues")
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.8))
                 }
@@ -126,7 +129,9 @@ struct SecurityScanView: View {
     }
 
     private func performScan() {
-        guard !isScanning else { return }
+        guard !isScanning else {
+            return
+        }
 
         isScanning = true
         scanComplete = false
@@ -150,30 +155,36 @@ struct SecurityScanView: View {
     }
 }
 
+// MARK: - SecuritySeverity
+
 enum SecuritySeverity: String {
     case critical = "Critical"
     case high = "High"
     case medium = "Medium"
     case low = "Low"
 
+    // MARK: Internal
+
     var color: Color {
         switch self {
-        case .critical: return .red
-        case .high: return .orange
-        case .medium: return .yellow
-        case .low: return .green
+        case .critical: .red
+        case .high: .orange
+        case .medium: .yellow
+        case .low: .green
         }
     }
 
     var icon: String {
         switch self {
-        case .critical: return "exclamationmark.triangle.fill"
-        case .high: return "exclamationmark.circle.fill"
-        case .medium: return "exclamationmark.circle"
-        case .low: return "info.circle"
+        case .critical: "exclamationmark.triangle.fill"
+        case .high: "exclamationmark.circle.fill"
+        case .medium: "exclamationmark.circle"
+        case .low: "info.circle"
         }
     }
 }
+
+// MARK: - SecurityCategory
 
 enum SecurityCategory: String {
     case software = "Software"
@@ -183,6 +194,8 @@ enum SecurityCategory: String {
     case malware = "Malware"
 }
 
+// MARK: - SecurityIssue
+
 struct SecurityIssue: Identifiable {
     let id = UUID()
     let name: String
@@ -190,6 +203,8 @@ struct SecurityIssue: Identifiable {
     let severity: SecuritySeverity
     let category: SecurityCategory
 }
+
+// MARK: - SecurityIssueRow
 
 struct SecurityIssueRow: View {
     let issue: SecurityIssue
@@ -226,6 +241,8 @@ struct SecurityIssueRow: View {
         .padding(.vertical, 4)
     }
 }
+
+// MARK: - ScanSummaryItem
 
 struct ScanSummaryItem: View {
     let count: Int

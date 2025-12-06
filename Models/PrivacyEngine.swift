@@ -5,6 +5,9 @@
 
 import Combine
 import Foundation
+import os.log
+
+// MARK: - BlockedConnection
 
 struct BlockedConnection: Identifiable {
     let id = UUID()
@@ -15,13 +18,15 @@ struct BlockedConnection: Identifiable {
     let level: Int
 }
 
-class PrivacyEngine: ObservableObject {
-    @Published var currentLevel: Int = 1
-    @Published var isActive: Bool = false
-    @Published var blockedConnections: [BlockedConnection] = []
-    @Published var totalBlockedToday: Int = 0
+// MARK: - PrivacyEngine
 
-    private var timer: Timer?
+class PrivacyEngine: ObservableObject {
+    // MARK: Internal
+
+    @Published var currentLevel = 1
+    @Published var isActive = false
+    @Published var blockedConnections: [BlockedConnection] = []
+    @Published var totalBlockedToday = 0
 
     let levelDescriptions: [Int: String] = [
         1: "Block basic trackers and ad networks",
@@ -50,8 +55,9 @@ class PrivacyEngine: ObservableObject {
     ]
 
     func setLevel(_ level: Int) {
-        currentLevel = level
-        UserDefaults.standard.set(level, forKey: "privacyLevel")
+        currentLevel = max(AppConstants.minimumPrivacyLevel,
+                           min(level, AppConstants.maximumPrivacyLevel))
+        UserDefaults.standard.set(currentLevel, forKey: UserDefaultsKey.privacyLevel)
 
         if isActive {
             applyRules()
@@ -68,6 +74,10 @@ class PrivacyEngine: ObservableObject {
         }
     }
 
+    // MARK: Private
+
+    private var timer: Timer?
+
     private func startProtection() {
         applyRules()
         startMonitoring()
@@ -80,7 +90,7 @@ class PrivacyEngine: ObservableObject {
 
     private func applyRules() {
         // Apply firewall rules based on current level
-        print("Applying privacy level \(currentLevel) rules...")
+        AppLogger.privacy.info("Applying privacy level \(self.currentLevel) rules...")
 
         // This would integrate with pfctl or Network Extension
         switch currentLevel {
@@ -98,7 +108,7 @@ class PrivacyEngine: ObservableObject {
     }
 
     private func removeRules() {
-        print("Removing privacy rules...")
+        AppLogger.privacy.info("Removing privacy rules...")
         // Remove all firewall rules
     }
 
@@ -137,7 +147,7 @@ class PrivacyEngine: ObservableObject {
         }
     }
 
-    // Rule application methods
+    /// Rule application methods
     private func applyBasicRules() {
         // Block ad networks and basic trackers
     }

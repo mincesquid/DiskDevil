@@ -5,7 +5,11 @@
 
 import SwiftUI
 
+// MARK: - DashboardView
+
 struct DashboardView: View {
+    // MARK: Internal
+
     @EnvironmentObject var subscriptionManager: SubscriptionManager
     @EnvironmentObject var privacyEngine: PrivacyEngine
     @EnvironmentObject var permissionManager: PermissionManager
@@ -39,6 +43,8 @@ struct DashboardView: View {
         .aeroBackground()
     }
 
+    // MARK: Private
+
     private var header: some View {
         VStack(spacing: 8) {
             ZStack {
@@ -67,8 +73,18 @@ struct DashboardView: View {
     }
 }
 
+// MARK: - SubscriptionStatusCard
+
 struct SubscriptionStatusCard: View {
     @EnvironmentObject var subscriptionManager: SubscriptionManager
+
+    var tierColor: Color {
+        switch subscriptionManager.tier {
+        case .free: .gray
+        case .premium: .orange
+        case .elite: .purple
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -128,19 +144,14 @@ struct SubscriptionStatusCard: View {
         .background(Color(.controlBackgroundColor))
         .cornerRadius(12)
     }
-
-    var tierColor: Color {
-        switch subscriptionManager.tier {
-        case .free: return .gray
-        case .premium: return .orange
-        case .elite: return .purple
-        }
-    }
 }
 
+// MARK: - PrivacyQuickCard
+
 struct PrivacyQuickCard: View {
+    // MARK: Internal
+
     @EnvironmentObject var privacyEngine: PrivacyEngine
-    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -162,10 +173,12 @@ struct PrivacyQuickCard: View {
                     Text("Current Level")
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.7))
-                    Text("Level \(privacyEngine.currentLevel) - \(privacyEngine.levelNames[privacyEngine.currentLevel] ?? "")")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
+                    Text(
+                        "Level \(privacyEngine.currentLevel) - \(privacyEngine.levelNames[privacyEngine.currentLevel] ?? "")"
+                    )
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
                 }
 
                 Spacer()
@@ -194,7 +207,13 @@ struct PrivacyQuickCard: View {
         .background(Color(.controlBackgroundColor))
         .cornerRadius(12)
     }
+
+    // MARK: Private
+
+    @Environment(\.openWindow) private var openWindow
 }
+
+// MARK: - SystemStatusCard
 
 struct SystemStatusCard: View {
     @EnvironmentObject var permissionManager: PermissionManager
@@ -226,6 +245,8 @@ struct SystemStatusCard: View {
     }
 }
 
+// MARK: - StatusRow
+
 struct StatusRow: View {
     let title: String
     let isGranted: Bool
@@ -248,6 +269,8 @@ struct StatusRow: View {
         }
     }
 }
+
+// MARK: - QuickActionsGrid
 
 struct QuickActionsGrid: View {
     var body: some View {
@@ -288,6 +311,8 @@ struct QuickActionsGrid: View {
     }
 }
 
+// MARK: - QuickActionCard
+
 struct QuickActionCard: View {
     let icon: String
     let title: String
@@ -316,8 +341,18 @@ struct QuickActionCard: View {
     }
 }
 
+// MARK: - SubscriptionBadge
+
 struct SubscriptionBadge: View {
     @EnvironmentObject var subscriptionManager: SubscriptionManager
+
+    var tierColor: Color {
+        switch subscriptionManager.tier {
+        case .free: .gray
+        case .premium: .orange
+        case .elite: .purple
+        }
+    }
 
     var body: some View {
         HStack(spacing: 4) {
@@ -334,13 +369,5 @@ struct SubscriptionBadge: View {
         .background(tierColor.opacity(0.2))
         .foregroundColor(tierColor)
         .cornerRadius(8)
-    }
-
-    var tierColor: Color {
-        switch subscriptionManager.tier {
-        case .free: return .gray
-        case .premium: return .orange
-        case .elite: return .purple
-        }
     }
 }

@@ -7,16 +7,20 @@ import Combine
 import Foundation
 import StoreKit
 
+// MARK: - SubscriptionTier
+
 enum SubscriptionTier: String, Codable {
     case free = "Free"
     case premium = "Premium"
     case elite = "Elite"
 
+    // MARK: Internal
+
     var maxPrivacyLevel: Int {
         switch self {
-        case .free: return 3
-        case .premium: return 9
-        case .elite: return 10
+        case .free: 3
+        case .premium: 9
+        case .elite: 10
         }
     }
 
@@ -26,20 +30,17 @@ enum SubscriptionTier: String, Codable {
 
     var color: String {
         switch self {
-        case .free: return "gray"
-        case .premium: return "orange"
-        case .elite: return "purple"
+        case .free: "gray"
+        case .premium: "orange"
+        case .elite: "purple"
         }
     }
 }
 
-class SubscriptionManager: ObservableObject {
-    @Published var tier: SubscriptionTier = .free
-    @Published var expirationDate: Date?
-    @Published var isActive: Bool = true
+// MARK: - SubscriptionManager
 
-    private var cancellables = Set<AnyCancellable>()
-    private let storeKit: StoreKitManager
+class SubscriptionManager: ObservableObject {
+    // MARK: Lifecycle
 
     init(storeKit: StoreKitManager) {
         self.storeKit = storeKit
@@ -56,15 +57,21 @@ class SubscriptionManager: ObservableObject {
         self.init(storeKit: StoreKitManager())
     }
 
+    // MARK: Internal
+
+    @Published var tier: SubscriptionTier = .free
+    @Published var expirationDate: Date?
+    @Published var isActive = true
+
     func loadSubscriptionStatus() {
         // Load from UserDefaults or keychain
-        if let savedTier = UserDefaults.standard.string(forKey: "subscriptionTier"),
+        if let savedTier = UserDefaults.standard.string(forKey: UserDefaultsKey.subscriptionTier),
            let tier = SubscriptionTier(rawValue: savedTier)
         {
             self.tier = tier
         }
 
-        if let expiration = UserDefaults.standard.object(forKey: "subscriptionExpiration") as? Date {
+        if let expiration = UserDefaults.standard.object(forKey: UserDefaultsKey.subscriptionExpiration) as? Date {
             expirationDate = expiration
             isActive = expiration > Date()
         }
@@ -73,27 +80,32 @@ class SubscriptionManager: ObservableObject {
     func updateSubscription(tier: SubscriptionTier, expirationDate: Date?) {
         self.tier = tier
         self.expirationDate = expirationDate
-        isActive = expirationDate == nil || expirationDate! > Date()
+        isActive = expirationDate.map { $0 > Date() } ?? true
 
-        UserDefaults.standard.set(tier.rawValue, forKey: "subscriptionTier")
+        UserDefaults.standard.set(tier.rawValue, forKey: UserDefaultsKey.subscriptionTier)
         if let expiration = expirationDate {
-            UserDefaults.standard.set(expiration, forKey: "subscriptionExpiration")
+            UserDefaults.standard.set(expiration, forKey: UserDefaultsKey.subscriptionExpiration)
         }
     }
 
     func hasAccess(to level: Int) -> Bool {
-        return level <= tier.maxPrivacyLevel
+        level <= tier.maxPrivacyLevel
     }
 
     func canAccessFeature(_ feature: String) -> Bool {
         // Add feature-specific logic
         switch feature {
-        case "network_monitor", "recovery_tools", "vm_isolation", "offensive_defense":
-            return tier != .free
-        case "threat_hunting", "api_access", "incident_response":
-            return tier == .elite
+        case "network_monitor",
+             "recovery_tools",
+             "vm_isolation",
+             "offensive_defense":
+            tier != .free
+        case "threat_hunting",
+             "api_access",
+             "incident_response":
+            tier == .elite
         default:
-            return true
+            true
         }
     }
 
@@ -119,6 +131,17 @@ class SubscriptionManager: ObservableObject {
         await syncWithStoreKit()
     }
 
+    // MARK: - Product Access
+
+    func getStoreKitManager() -> StoreKitManager {
+        storeKit
+    }
+
+    // MARK: Private
+
+    private var cancellables = Set<AnyCancellable>()
+    private let storeKit: StoreKitManager
+
     private func syncWithStoreKit() async {
         await storeKit.updateSubscriptionStatus()
 
@@ -127,11 +150,5 @@ class SubscriptionManager: ObservableObject {
                 updateSubscription(tier: status.tier, expirationDate: status.expirationDate)
             }
         }
-    }
-
-    // MARK: - Product Access
-
-    func getStoreKitManager() -> StoreKitManager {
-        storeKit
     }
 }

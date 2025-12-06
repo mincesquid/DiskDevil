@@ -5,26 +5,40 @@
 //  StoreKit 2 subscription management
 
 import Foundation
+import os.log
 import StoreKit
 
-enum StoreError: Error {
+// MARK: - StoreError
+
+enum StoreError: Error, LocalizedError {
     case failedVerification
     case productNotFound
     case purchaseFailed
+    case networkError
+    case restoreFailed(Error)
+
+    // MARK: Internal
+
+    var errorDescription: String? {
+        switch self {
+        case .failedVerification:
+            "Could not verify purchase. Please try again."
+        case .productNotFound:
+            "Product not available. Please check your internet connection."
+        case .purchaseFailed:
+            "Purchase could not be completed. Please try again later."
+        case .networkError:
+            "Network error. Please check your internet connection."
+        case let .restoreFailed(underlying):
+            "Could not restore purchases: \(underlying.localizedDescription)"
+        }
+    }
 }
 
+// MARK: - StoreKitManager
+
 class StoreKitManager: ObservableObject {
-    // Product IDs - configure these in App Store Connect
-    private let premiumMonthlyID = "com.diskdevil.premium.monthly"
-    private let premiumYearlyID = "com.diskdevil.premium.yearly"
-    private let eliteMonthlyID = "com.diskdevil.elite.monthly"
-    private let eliteYearlyID = "com.diskdevil.elite.yearly"
-
-    @Published private(set) var products: [Product] = []
-    @Published private(set) var purchasedProducts: [Product] = []
-    @Published private(set) var subscriptionStatus: SubscriptionStatus?
-
-    private var updates: Task<Void, Never>?
+    // MARK: Lifecycle
 
     init() {
         updates = observeTransactionUpdates()
@@ -34,9 +48,21 @@ class StoreKitManager: ObservableObject {
         updates?.cancel()
     }
 
+    // MARK: Internal
+
+    @Published private(set) var products: [Product] = []
+    @Published private(set) var purchasedProducts: [Product] = []
+    @Published private(set) var subscriptionStatus: SubscriptionStatus?
+    @Published var lastError: StoreError?
+    @Published private(set) var isLoading = false
+
     // MARK: - Product Loading
 
+    @MainActor
     func loadProducts() async {
+        isLoading = true
+        lastError = nil
+
         do {
             let productIDs = [
                 premiumMonthlyID,
@@ -49,10 +75,15 @@ class StoreKitManager: ObservableObject {
 
             // Sort by price for display
             products.sort { $0.price < $1.price }
+
+            AppLogger.storeKit.info("Loaded \(self.products.count) products successfully")
         } catch {
-            print("Failed to load products: \(error)")
+            AppLogger.storeKit.error("Failed to load products: \(error.localizedDescription)")
+            lastError = .networkError
             products = []
         }
+
+        isLoading = false
     }
 
     // MARK: - Purchase
@@ -81,13 +112,26 @@ class StoreKitManager: ObservableObject {
 
     // MARK: - Restore Purchases
 
+    @MainActor
     func restorePurchases() async {
+        isLoading = true
+        lastError = nil
+
         do {
             try await AppStore.sync()
             await updateSubscriptionStatus()
+            AppLogger.storeKit.info("Purchases restored successfully")
         } catch {
-            print("Failed to restore purchases: \(error)")
+            AppLogger.storeKit.error("Failed to restore purchases: \(error.localizedDescription)")
+            lastError = .restoreFailed(error)
         }
+
+        isLoading = false
+    }
+
+    /// Clears the last error - call this when dismissing error alerts
+    func clearError() {
+        lastError = nil
     }
 
     // MARK: - Subscription Status
@@ -98,7 +142,9 @@ class StoreKitManager: ObservableObject {
         var activeSubs: [Product] = []
 
         for await result in Transaction.currentEntitlements {
-            guard case let .verified(transaction) = result else { continue }
+            guard case let .verified(transaction) = result else {
+                continue
+            }
 
             // Skip revoked transactions
             if transaction.revocationDate != nil {
@@ -116,9 +162,11 @@ class StoreKitManager: ObservableObject {
                     currentTier = .premium
                 }
 
-                // Get expiration date
+                // Get expiration date - use the latest one
                 if let expiration = transaction.expirationDate {
-                    if expirationDate == nil || expiration > expirationDate! {
+                    if let currentExpiration = expirationDate {
+                        expirationDate = max(expiration, currentExpiration)
+                    } else {
                         expirationDate = expiration
                     }
                 }
@@ -131,27 +179,6 @@ class StoreKitManager: ObservableObject {
             expirationDate: expirationDate,
             isActive: !activeSubs.isEmpty
         )
-    }
-
-    // MARK: - Transaction Verification
-
-    private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
-        switch result {
-        case .unverified:
-            throw StoreError.failedVerification
-        case let .verified(safe):
-            return safe
-        }
-    }
-
-    // MARK: - Transaction Updates
-
-    private func observeTransactionUpdates() -> Task<Void, Never> {
-        Task.detached {
-            for await _ in Transaction.updates {
-                await self.updateSubscriptionStatus()
-            }
-        }
     }
 
     // MARK: - Helper Methods
@@ -173,7 +200,40 @@ class StoreKitManager: ObservableObject {
     func formattedPrice(for product: Product) -> String {
         product.displayPrice
     }
+
+    // MARK: Private
+
+    // Product IDs from centralized constants
+    private let premiumMonthlyID = AppConstants.ProductID.premiumMonthly
+    private let premiumYearlyID = AppConstants.ProductID.premiumYearly
+    private let eliteMonthlyID = AppConstants.ProductID.eliteMonthly
+    private let eliteYearlyID = AppConstants.ProductID.eliteYearly
+
+    private var updates: Task<Void, Never>?
+
+    // MARK: - Transaction Verification
+
+    private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
+        switch result {
+        case .unverified:
+            throw StoreError.failedVerification
+        case let .verified(safe):
+            return safe
+        }
+    }
+
+    // MARK: - Transaction Updates
+
+    private func observeTransactionUpdates() -> Task<Void, Never> {
+        Task.detached {
+            for await _ in Transaction.updates {
+                await self.updateSubscriptionStatus()
+            }
+        }
+    }
 }
+
+// MARK: - SubscriptionStatus
 
 struct SubscriptionStatus {
     let tier: SubscriptionTier

@@ -5,13 +5,12 @@
 
 import SwiftUI
 
+// MARK: - RecoveryToolsView
+
 struct RecoveryToolsView: View {
+    // MARK: Internal
+
     @EnvironmentObject var subscriptionManager: SubscriptionManager
-    @State private var selectedTool: RecoveryTool?
-    @State private var isRunning = false
-    @State private var progress: Double = 0
-    @State private var statusMessage = ""
-    @State private var runTimer: Timer?
 
     var body: some View {
         VStack(spacing: 20) {
@@ -119,8 +118,18 @@ struct RecoveryToolsView: View {
         }
     }
 
+    // MARK: Private
+
+    @State private var selectedTool: RecoveryTool?
+    @State private var isRunning = false
+    @State private var progress: Double = 0
+    @State private var statusMessage = ""
+    @State private var runTimer: Timer?
+
     private func runSelectedTool() {
-        guard let tool = selectedTool else { return }
+        guard let tool = selectedTool else {
+            return
+        }
 
         isRunning = true
         progress = 0
@@ -162,6 +171,8 @@ struct RecoveryToolsView: View {
     }
 }
 
+// MARK: - RecoveryTool
+
 enum RecoveryTool: String, CaseIterable {
     case diskRepair = "Disk Repair"
     case permissionsFix = "Permissions Fix"
@@ -170,54 +181,59 @@ enum RecoveryTool: String, CaseIterable {
     case bootRepair = "Boot Repair"
     case networkReset = "Network Reset"
 
+    // MARK: Internal
+
     var icon: String {
         switch self {
-        case .diskRepair: return "internaldrive"
-        case .permissionsFix: return "lock.shield"
-        case .cacheClean: return "trash.circle"
-        case .systemReset: return "arrow.counterclockwise"
-        case .bootRepair: return "power"
-        case .networkReset: return "wifi.exclamationmark"
+        case .diskRepair: "internaldrive"
+        case .permissionsFix: "lock.shield"
+        case .cacheClean: "trash.circle"
+        case .systemReset: "arrow.counterclockwise"
+        case .bootRepair: "power"
+        case .networkReset: "wifi.exclamationmark"
         }
     }
 
     var color: Color {
         switch self {
-        case .diskRepair: return .blue
-        case .permissionsFix: return .green
-        case .cacheClean: return .orange
-        case .systemReset: return .red
-        case .bootRepair: return .purple
-        case .networkReset: return .cyan
+        case .diskRepair: .blue
+        case .permissionsFix: .green
+        case .cacheClean: .orange
+        case .systemReset: .red
+        case .bootRepair: .purple
+        case .networkReset: .cyan
         }
     }
 
     var description: String {
         switch self {
         case .diskRepair:
-            return "Verify and repair disk errors, fix file system issues, and optimize disk performance."
+            "Verify and repair disk errors, fix file system issues, and optimize disk performance."
         case .permissionsFix:
-            return "Reset file and folder permissions to default values, fixing access issues."
+            "Reset file and folder permissions to default values, fixing access issues."
         case .cacheClean:
-            return "Clear system and application caches to resolve performance issues."
+            "Clear system and application caches to resolve performance issues."
         case .systemReset:
-            return "Reset system settings to defaults while preserving user data."
+            "Reset system settings to defaults while preserving user data."
         case .bootRepair:
-            return "Repair boot configuration and fix startup issues."
+            "Repair boot configuration and fix startup issues."
         case .networkReset:
-            return "Reset network settings, clear DNS cache, and renew DHCP lease."
+            "Reset network settings, clear DNS cache, and renew DHCP lease."
         }
     }
 
     var requiresReboot: Bool {
         switch self {
-        case .systemReset, .bootRepair:
-            return true
+        case .systemReset,
+             .bootRepair:
+            true
         default:
-            return false
+            false
         }
     }
 }
+
+// MARK: - RecoveryToolCard
 
 struct RecoveryToolCard: View {
     let tool: RecoveryTool

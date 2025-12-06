@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct TelemetryInspectorView: View {
+    // MARK: Internal
+
     @EnvironmentObject var subscriptionManager: SubscriptionManager
-    @StateObject private var inspector = TelemetryService()
 
     var body: some View {
         VStack(spacing: 20) {
@@ -31,6 +32,10 @@ struct TelemetryInspectorView: View {
             inspector.refresh()
         }
     }
+
+    // MARK: Private
+
+    @StateObject private var inspector = TelemetryService()
 
     private var settingsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -116,9 +121,9 @@ struct TelemetryInspectorView: View {
 
     private func statusColor(_ status: TelemetryStatus) -> Color {
         switch status {
-        case .enabled: return .red
-        case .disabled: return .green
-        case .unknown: return .gray
+        case .enabled: .red
+        case .disabled: .green
+        case .unknown: .gray
         }
     }
 }
