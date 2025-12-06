@@ -19,15 +19,17 @@ struct RecoveryToolsView: View {
             VStack(spacing: 8) {
                 Image(systemName: "bandage")
                     .font(.system(size: 50))
-                    .foregroundColor(.blue)
+                    .foregroundColor(.white)
+                    .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 6)
 
                 Text("Recovery Tools")
                     .font(.title)
                     .fontWeight(.bold)
+                    .foregroundColor(.white)
 
                 Text("System repair and recovery utilities")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.8))
 
                 if subscriptionManager.tier == .free {
                     Text("Premium Feature")
@@ -49,11 +51,10 @@ struct RecoveryToolsView: View {
 
                     Text(statusMessage)
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.8))
                 }
                 .padding()
-                .background(Color(.controlBackgroundColor))
-                .cornerRadius(12)
+                .glassCard()
             }
 
             // Recovery Tools Grid
@@ -90,7 +91,7 @@ struct RecoveryToolsView: View {
                         .font(.headline)
                     Text(tool.description)
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.8))
 
                     if tool.requiresReboot {
                         HStack {
@@ -112,6 +113,7 @@ struct RecoveryToolsView: View {
             Spacer()
         }
         .padding()
+        .aeroBackground()
         .onDisappear {
             stopTool()
         }
@@ -231,7 +233,7 @@ struct RecoveryToolCard: View {
 
                 Text(tool.rawValue)
                     .font(.headline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(.white)
             }
             .frame(maxWidth: .infinity)
             .padding()
@@ -243,5 +245,6 @@ struct RecoveryToolCard: View {
             )
         }
         .buttonStyle(.plain)
+        .glassCard()
     }
 }

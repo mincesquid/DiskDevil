@@ -20,13 +20,15 @@ struct CleanupView: View {
             VStack(spacing: 8) {
                 Image(systemName: "trash")
                     .font(.system(size: 50))
-                    .foregroundColor(.blue)
+                    .foregroundColor(.white)
+                    .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 6)
                 Text("Smart Cleanup")
                     .font(.title2)
                     .fontWeight(.bold)
+                    .foregroundColor(.white)
                 Text("Audit caches, logs, downloads, tmp, and trash")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.8))
             }
             .padding()
 
@@ -35,6 +37,7 @@ struct CleanupView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     summaryCard
+                        .glassCard()
                     actionButtons
 
                     ForEach(categories) { category in
@@ -52,13 +55,15 @@ struct CleanupView: View {
                     if let userMessage {
                         Text(userMessage)
                             .font(.footnote)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.white.opacity(0.8))
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 .padding()
             }
         }
+        .background(Color.clear)
+        .aeroBackground()
         .onAppear {
             scanAllCategories()
         }
@@ -77,11 +82,11 @@ struct CleanupView: View {
                 VStack(alignment: .leading) {
                     Text("Detected")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.7))
                     Text(formatBytes(totalDiscoveredBytes))
                         .font(.title)
                         .fontWeight(.bold)
-                        .foregroundColor(.blue)
+                        .foregroundColor(AeroTheme.accent)
                 }
 
                 Spacer()
@@ -89,7 +94,7 @@ struct CleanupView: View {
                 VStack(alignment: .leading) {
                     Text("Selected")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.7))
                     Text(formatBytes(selectedBytes))
                         .font(.title)
                         .fontWeight(.bold)
@@ -101,7 +106,7 @@ struct CleanupView: View {
                 VStack(alignment: .leading) {
                     Text("Items")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.7))
                     Text("\(selectedItems.count)")
                         .font(.title)
                         .fontWeight(.bold)
@@ -111,8 +116,7 @@ struct CleanupView: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(Color(.controlBackgroundColor))
-        .cornerRadius(12)
+        .glassCard()
     }
 
     private var actionButtons: some View {
@@ -401,9 +405,10 @@ private struct CleanupCategoryCard: View {
                 VStack(alignment: .leading) {
                     Text(category.kind.title)
                         .font(.headline)
+                        .foregroundColor(.white)
                     Text(category.kind.description)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.7))
                 }
                 Spacer()
                 Text(statusText)
@@ -453,8 +458,7 @@ private struct CleanupCategoryCard: View {
             }
         }
         .padding()
-        .background(Color(.controlBackgroundColor))
-        .cornerRadius(12)
+        .glassCard()
     }
 
     private var statusText: String {

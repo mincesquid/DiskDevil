@@ -14,29 +14,19 @@ struct DashboardView: View {
         ScrollView {
             VStack(spacing: 20) {
                 // Header
-                VStack(spacing: 8) {
-                    Image(systemName: "shield.lefthalf.filled.trianglebadge.exclamationmark")
-                        .font(.system(size: 60))
-                        .foregroundColor(.purple)
-
-                    Text("DiskDevil")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-
-                    Text("macOS Security & Recovery Suite")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.top, 40)
+                header
 
                 // Subscription Status
                 SubscriptionStatusCard()
+                    .glassCard()
 
                 // Privacy Protection Quick Access
                 PrivacyQuickCard()
+                    .glassCard()
 
                 // System Status
                 SystemStatusCard()
+                    .glassCard()
 
                 // Quick Actions
                 QuickActionsGrid()
@@ -46,7 +36,34 @@ struct DashboardView: View {
             .padding()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.windowBackgroundColor))
+        .aeroBackground()
+    }
+
+    private var header: some View {
+        VStack(spacing: 8) {
+            ZStack {
+                Image(systemName: "shield.lefthalf.filled")
+                    .font(.system(size: 70))
+                    .foregroundStyle(AeroTheme.accent, .white)
+                    .shadow(color: Color.black.opacity(0.25), radius: 8, x: 0, y: 6)
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 36))
+                    .foregroundColor(.red)
+                    .offset(x: 18, y: 22)
+                    .shadow(color: .black.opacity(0.35), radius: 6, x: 0, y: 4)
+            }
+
+            Text("DiskDevil")
+                .font(.largeTitle)
+                .fontWeight(.heavy)
+                .foregroundColor(.white)
+                .shadow(color: .black.opacity(0.35), radius: 8, x: 0, y: 4)
+
+            Text("macOS Security & Recovery Suite")
+                .font(.title3)
+                .foregroundColor(.white.opacity(0.82))
+        }
+        .padding(.top, 40)
     }
 }
 
@@ -123,12 +140,13 @@ struct SubscriptionStatusCard: View {
 
 struct PrivacyQuickCard: View {
     @EnvironmentObject var privacyEngine: PrivacyEngine
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "shield.lefthalf.filled")
-                    .foregroundColor(.blue)
+                    .foregroundColor(AeroTheme.accent)
                 Text("Privacy Protection")
                     .font(.headline)
                 Spacer()
@@ -143,10 +161,11 @@ struct PrivacyQuickCard: View {
                 VStack(alignment: .leading) {
                     Text("Current Level")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.7))
                     Text("Level \(privacyEngine.currentLevel) - \(privacyEngine.levelNames[privacyEngine.currentLevel] ?? "")")
                         .font(.subheadline)
                         .fontWeight(.semibold)
+                        .foregroundColor(.white)
                 }
 
                 Spacer()
@@ -154,15 +173,17 @@ struct PrivacyQuickCard: View {
                 VStack(alignment: .trailing) {
                     Text("Blocked Today")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.7))
                     Text("\(privacyEngine.totalBlockedToday)")
                         .font(.title3)
                         .fontWeight(.bold)
-                        .foregroundColor(.green)
+                        .foregroundColor(AeroTheme.neon)
                 }
             }
 
-            NavigationLink(destination: PrivacySliderView()) {
+            Button {
+                openWindow(id: "privacy")
+            } label: {
                 Text("Configure Protection")
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)

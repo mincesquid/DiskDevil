@@ -3,6 +3,7 @@
 //  DiskDevil
 //
 
+import AppKit
 import SwiftUI
 
 struct HiddenFilesView: View {
@@ -16,15 +17,17 @@ struct HiddenFilesView: View {
             VStack(spacing: 8) {
                 Image(systemName: "eye.slash")
                     .font(.system(size: 50))
-                    .foregroundColor(.blue)
+                    .foregroundColor(.white)
+                    .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 6)
 
                 Text("Hidden Files Browser")
                     .font(.title)
                     .fontWeight(.bold)
+                    .foregroundColor(.white)
 
                 Text("Reveal and manage hidden files on your system")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.8))
             }
             .padding(.top, 20)
 
@@ -37,14 +40,13 @@ struct HiddenFilesView: View {
                     .labelsHidden()
             }
             .padding()
-            .background(Color(.controlBackgroundColor))
-            .cornerRadius(12)
+            .glassCard()
 
             // Path
             HStack {
                 Text("Current Path:")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.8))
                 Text(currentPath)
                     .font(.system(.subheadline, design: .monospaced))
                     .lineLimit(1)
@@ -52,14 +54,13 @@ struct HiddenFilesView: View {
                 Spacer()
             }
             .padding()
-            .background(Color(.controlBackgroundColor))
-            .cornerRadius(12)
+            .glassCard()
 
             // File List
             List(files) { file in
                 HStack {
                     Image(systemName: file.isDirectory ? "folder.fill" : "doc.fill")
-                        .foregroundColor(file.isDirectory ? .blue : .gray)
+                        .foregroundColor(file.isDirectory ? AeroTheme.accent : .gray)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(file.name)
@@ -80,16 +81,28 @@ struct HiddenFilesView: View {
                             .background(Color.orange.opacity(0.2))
                             .foregroundColor(.orange)
                             .cornerRadius(4)
+                        Text("Reveal")
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(Color.blue.opacity(0.2))
+                            .foregroundColor(.blue)
+                            .cornerRadius(4)
+                            .onTapGesture {
+                                reveal(file.url)
+                            }
                     }
                 }
                 .padding(.vertical, 4)
             }
             .listStyle(.inset)
             .cornerRadius(12)
+            .glassCard()
 
             Spacer()
         }
         .padding()
+        .aeroBackground()
         .onAppear {
             loadFiles()
         }
@@ -118,6 +131,7 @@ struct HiddenFilesView: View {
                 return FileItem(
                     name: url.lastPathComponent,
                     path: url.path,
+                    url: url,
                     isDirectory: resourceValues?.isDirectory ?? false,
                     isHidden: resourceValues?.isHidden ?? false
                 )
@@ -126,12 +140,17 @@ struct HiddenFilesView: View {
             files = []
         }
     }
+
+    private func reveal(_ url: URL) {
+        NSWorkspace.shared.activateFileViewerSelecting([url])
+    }
 }
 
 struct FileItem: Identifiable {
     let id = UUID()
     let name: String
     let path: String
+    let url: URL
     let isDirectory: Bool
     let isHidden: Bool
 }

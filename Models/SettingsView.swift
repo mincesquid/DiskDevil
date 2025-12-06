@@ -9,6 +9,7 @@ struct SettingsView: View {
     @EnvironmentObject var subscriptionManager: SubscriptionManager
     @EnvironmentObject var privacyEngine: PrivacyEngine
     @EnvironmentObject var permissionManager: PermissionManager
+    @Environment(\.openWindow) private var openWindow
 
     @AppStorage("launchAtLogin") private var launchAtLogin = false
     @AppStorage("showInMenuBar") private var showInMenuBar = true
@@ -22,15 +23,17 @@ struct SettingsView: View {
                 VStack(spacing: 8) {
                     Image(systemName: "gearshape")
                         .font(.system(size: 50))
-                        .foregroundColor(.blue)
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 6)
 
                     Text("Settings")
-                        .font(.title)
-                        .fontWeight(.bold)
+                        .font(.largeTitle)
+                        .fontWeight(.heavy)
+                        .foregroundColor(.white)
 
                     Text("Configure DiskDevil preferences")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.8))
                 }
                 .padding(.top, 20)
 
@@ -75,8 +78,8 @@ struct SettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                         Spacer()
-                        NavigationLink(destination: PrivacySliderView()) {
-                            Text("Configure")
+                        Button("Configure") {
+                            openWindow(id: "privacy")
                         }
                         .buttonStyle(.bordered)
                     }
@@ -177,6 +180,7 @@ struct SettingsView: View {
             }
             .padding()
         }
+        .aeroBackground()
     }
 
     var tierColor: Color {
@@ -203,9 +207,10 @@ struct SettingsSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: icon)
-                    .foregroundColor(.blue)
+                    .foregroundColor(AeroTheme.accent)
                 Text(title)
                     .font(.headline)
+                    .foregroundColor(.white)
             }
 
             VStack(spacing: 0) {
@@ -213,8 +218,7 @@ struct SettingsSection<Content: View>: View {
             }
         }
         .padding()
-        .background(Color(.controlBackgroundColor))
-        .cornerRadius(12)
+        .glassCard()
     }
 }
 
@@ -230,7 +234,7 @@ struct SettingsToggle: View {
                     .font(.headline)
                 Text(description)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.7))
             }
             Spacer()
             Toggle("", isOn: $isOn)

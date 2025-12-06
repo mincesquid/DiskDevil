@@ -25,7 +25,7 @@ struct UpgradeView: View {
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title2)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.white.opacity(0.8))
                     }
                     .buttonStyle(.plain)
                 }
@@ -36,7 +36,7 @@ struct UpgradeView: View {
                         .font(.system(size: 60))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [.orange, .purple],
+                                colors: [AeroTheme.sun, AeroTheme.flare],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -45,10 +45,11 @@ struct UpgradeView: View {
                     Text("Upgrade to Pro")
                         .font(.largeTitle)
                         .fontWeight(.bold)
+                        .foregroundColor(.white)
 
                     Text("Unlock the full power of DiskDevil")
                         .font(.title3)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.8))
                 }
                 .padding(.top, 40)
 
@@ -72,8 +73,7 @@ struct UpgradeView: View {
                     }
                 }
                 .padding()
-                .background(Color(.controlBackgroundColor))
-                .cornerRadius(12)
+                .glassCard()
 
                 // Plan Cards
                 HStack(spacing: 16) {
@@ -142,7 +142,7 @@ struct UpgradeView: View {
                 // Terms
                 Text("Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
 
@@ -150,6 +150,7 @@ struct UpgradeView: View {
             }
             .padding()
         }
+        .aeroBackground()
         .alert("Purchase Error", isPresented: $showError) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -228,14 +229,16 @@ struct PlanCard: View {
                 Text(tier.displayName)
                     .font(.title2)
                     .fontWeight(.bold)
+                    .foregroundColor(.white)
 
                 VStack(spacing: 4) {
                     Text(isAnnual ? annualPrice : monthlyPrice)
                         .font(.title)
                         .fontWeight(.bold)
+                        .foregroundColor(.white)
                     Text(isAnnual ? "/year" : "/month")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.8))
                 }
 
                 Divider()
@@ -244,25 +247,26 @@ struct PlanCard: View {
                     ForEach(features, id: \.self) { feature in
                         HStack(spacing: 8) {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
+                                .foregroundColor(AeroTheme.neon)
                                 .font(.caption)
                             Text(feature)
                                 .font(.caption)
-                                .foregroundColor(.primary)
+                                .foregroundColor(.white)
                         }
                     }
                 }
             }
             .padding()
             .frame(maxWidth: .infinity)
-            .background(isSelected ? tierColor.opacity(0.1) : Color(.controlBackgroundColor))
+            .background(isSelected ? tierColor.opacity(0.2) : Color.white.opacity(0.08))
             .cornerRadius(16)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(isSelected ? tierColor : Color.clear, lineWidth: 2)
+                    .stroke(isSelected ? tierColor : Color.white.opacity(0.15), lineWidth: 2)
             )
         }
         .buttonStyle(.plain)
+        .glassCard()
     }
 }
 
@@ -281,10 +285,11 @@ struct PremiumUpgradeView: View {
             Text("Premium Feature")
                 .font(.title)
                 .fontWeight(.bold)
+                .foregroundColor(.white)
 
             Text("\(feature) requires a premium subscription")
                 .font(.body)
-                .foregroundColor(.secondary)
+                .foregroundColor(.white.opacity(0.8))
                 .multilineTextAlignment(.center)
 
             Button("Upgrade Now") {

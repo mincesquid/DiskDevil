@@ -18,15 +18,17 @@ struct SecurityScanView: View {
             VStack(spacing: 8) {
                 Image(systemName: "checkmark.shield")
                     .font(.system(size: 50))
-                    .foregroundColor(.blue)
+                    .foregroundColor(.white)
+                    .shadow(color: .black.opacity(0.25), radius: 8, x: 0, y: 6)
 
                 Text("Security Scan")
                     .font(.title)
                     .fontWeight(.bold)
+                    .foregroundColor(.white)
 
                 Text("Detect vulnerabilities and security threats")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.8))
             }
             .padding(.top, 20)
 
@@ -38,11 +40,10 @@ struct SecurityScanView: View {
 
                     Text("Scanning... \(Int(scanProgress * 100))%")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.8))
                 }
                 .padding()
-                .background(Color(.controlBackgroundColor))
-                .cornerRadius(12)
+                .glassCard()
             }
 
             // Scan Button
@@ -87,8 +88,7 @@ struct SecurityScanView: View {
                     )
                 }
                 .padding()
-                .background(Color(.controlBackgroundColor))
-                .cornerRadius(12)
+                .glassCard()
             }
 
             // Results
@@ -99,23 +99,29 @@ struct SecurityScanView: View {
                         .foregroundColor(scanComplete ? .green : .gray)
                     Text(scanComplete ? "No threats detected!" : "Ready to scan")
                         .font(.headline)
+                        .foregroundColor(.white)
                     Text(scanComplete ? "Your system appears to be secure" : "Start a scan to check for security issues")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.8))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding()
+                .glassCard()
             } else {
                 List(securityIssues) { issue in
                     SecurityIssueRow(issue: issue)
                 }
                 .listStyle(.inset)
                 .cornerRadius(12)
+                .glassCard()
             }
 
             Spacer()
         }
         .padding()
+        .glassCard()
+        .padding()
+        .aeroBackground()
         .onDisappear {
             isScanning = false
         }

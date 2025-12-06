@@ -3,22 +3,52 @@
 //  DiskDevil
 //
 
+import AppKit
 import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var subscriptionManager: SubscriptionManager
     @EnvironmentObject var privacyEngine: PrivacyEngine
     @EnvironmentObject var permissionManager: PermissionManager
+    @Environment(\.openWindow) private var openWindow
 
     @State private var selectedTab: NavigationItem = .dashboard
+    @State private var lastNonPrivacySelection: NavigationItem = .dashboard
 
     var body: some View {
         NavigationSplitView {
             SidebarView(selectedTab: $selectedTab)
         } detail: {
-            DetailContent(selectedTab: selectedTab)
+            VStack(spacing: 0) {
+                TopBar(openWindow: openWindow)
+                DetailContent(selectedTab: selectedTab)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         }
         .navigationSplitViewColumnWidth(min: 220, ideal: 250)
+        .onChange(of: selectedTab) { newValue in
+            if newValue == .privacySlider {
+                openPrivacyWindow()
+                selectedTab = lastNonPrivacySelection
+            } else {
+                lastNonPrivacySelection = newValue
+            }
+        }
+    }
+
+    private func openPrivacyWindow() {
+        openWindow(id: "privacy")
+
+        // Nudge the window so it's visibly separate from the main window.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            if let window = NSApp.windows.first(where: { $0.title == "Privacy Protection" }) {
+                var frame = window.frame
+                frame.origin.x -= 80
+                frame.origin.y -= 40
+                window.setFrame(frame, display: true, animate: true)
+                window.makeKeyAndOrderFront(nil)
+            }
+        }
     }
 }
 
@@ -105,7 +135,7 @@ struct DetailContent: View {
                 case .dashboard:
                     DashboardView()
                 case .privacySlider:
-                    PrivacySliderView()
+                    PrivacyPlaceholderView()
                 case .hiddenFiles:
                     HiddenFilesView()
                 case .telemetry:
@@ -124,5 +154,49 @@ struct DetailContent: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct PrivacyPlaceholderView: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "rectangle.on.rectangle")
+                .font(.system(size: 36))
+                .foregroundColor(.secondary)
+            Text("Privacy Protection opens in its own window.")
+                .font(.headline)
+            Text("Use the separate window to adjust levels. Sidebar stays active here.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct TopBar: View {
+    let openWindow: OpenWindowAction
+
+    var body: some View {
+        HStack {
+            Image(systemName: "shield.lefthalf.filled")
+                .foregroundColor(AeroTheme.accent)
+                .font(.title2)
+            Text("DiskDevil")
+                .appFont(18, weight: .semibold)
+                .foregroundColor(.white)
+            Spacer()
+            Button {
+                openWindow(id: "settings")
+            } label: {
+                Image(systemName: "gearshape.fill")
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.white)
+            .padding(.horizontal, 6)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial)
+        .glassCard()
     }
 }

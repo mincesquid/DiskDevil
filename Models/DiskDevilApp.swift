@@ -21,6 +21,7 @@ struct DiskDevilApp: App {
                 .environmentObject(privacyEngine)
                 .environmentObject(permissionManager)
                 .environmentObject(networkMonitor)
+                .environment(\.font, AeroTheme.baseFont)
                 .frame(minWidth: 900, minHeight: 700)
         }
         .windowStyle(.hiddenTitleBar)
@@ -33,9 +34,28 @@ struct DiskDevilApp: App {
                 .environmentObject(subscriptionManager)
         }
 
+        WindowGroup("Settings", id: "settings") {
+            SettingsView()
+                .environmentObject(subscriptionManager)
+                .environmentObject(privacyEngine)
+                .environmentObject(permissionManager)
+                .environment(\.font, AeroTheme.baseFont)
+        }
+        .windowResizability(.contentSize)
+
+        WindowGroup("Privacy Protection", id: "privacy") {
+            PrivacySliderView()
+                .environmentObject(subscriptionManager)
+                .environmentObject(privacyEngine)
+                .environmentObject(permissionManager)
+                .environment(\.font, AeroTheme.baseFont)
+        }
+        .windowResizability(.contentSize)
+
         WindowGroup("Upgrade", id: "upgrade") {
             UpgradeView()
                 .environmentObject(subscriptionManager)
+                .environment(\.font, AeroTheme.baseFont)
         }
         .windowResizability(.contentSize)
 

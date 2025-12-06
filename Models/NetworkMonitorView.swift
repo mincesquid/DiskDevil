@@ -16,15 +16,17 @@ struct NetworkMonitorView: View {
             VStack(spacing: 8) {
                 Image(systemName: "network")
                     .font(.system(size: 50))
-                    .foregroundColor(.blue)
+                    .foregroundColor(.white)
+                    .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 6)
 
                 Text("Network Monitor")
                     .font(.title)
                     .fontWeight(.bold)
+                    .foregroundColor(.white)
 
                 Text("Monitor network connections and traffic")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.8))
 
                 if subscriptionManager.tier == .free {
                     Text("Premium Feature")
@@ -45,8 +47,7 @@ struct NetworkMonitorView: View {
                 TrafficCard(title: "Connections", value: "\(monitor.connections.count)", icon: "link", color: .orange)
             }
             .padding()
-            .background(Color(.controlBackgroundColor))
-            .cornerRadius(12)
+            .glassCard()
 
             // Monitor Toggle
             HStack {
@@ -55,7 +56,7 @@ struct NetworkMonitorView: View {
                         .font(.headline)
                     Text(isMonitoring ? "Active" : "Disabled")
                         .font(.subheadline)
-                        .foregroundColor(isMonitoring ? .green : .secondary)
+                        .foregroundColor(isMonitoring ? .green : .white.opacity(0.7))
                 }
                 Spacer()
                 Toggle("", isOn: $isMonitoring)
@@ -69,8 +70,7 @@ struct NetworkMonitorView: View {
                     })
             }
             .padding()
-            .background(Color(.controlBackgroundColor))
-            .cornerRadius(12)
+            .glassCard()
 
             // Connections List
             if monitor.connections.isEmpty {
@@ -86,17 +86,20 @@ struct NetworkMonitorView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding()
+                .glassCard()
             } else {
                 List(monitor.connections) { connection in
                     NetworkConnectionRow(connection: connection)
                 }
                 .listStyle(.inset)
                 .cornerRadius(12)
+                .glassCard()
             }
 
             Spacer()
         }
         .padding()
+        .aeroBackground()
         .onDisappear {
             stopMonitoring()
         }

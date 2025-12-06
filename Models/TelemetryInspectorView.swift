@@ -9,13 +9,14 @@ struct TelemetryInspectorView: View {
             VStack(spacing: 8) {
                 Image(systemName: "antenna.radiowaves.left.and.right")
                     .font(.system(size: 50))
-                    .foregroundColor(.blue)
+                    .foregroundColor(.white)
+                    .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 6)
                 Text("Telemetry Inspector")
-                    .font(.title)
-                    .fontWeight(.bold)
+                    .appFont(26, weight: .heavy)
+                    .foregroundColor(.white)
                 Text("Review diagnostics, analytics, and crash reporting settings")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.8))
             }
             .padding(.top, 20)
 
@@ -25,6 +26,7 @@ struct TelemetryInspectorView: View {
             Spacer()
         }
         .padding()
+        .aeroBackground()
         .onAppear {
             inspector.refresh()
         }
@@ -33,12 +35,13 @@ struct TelemetryInspectorView: View {
     private var settingsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Settings")
-                .font(.headline)
+                .appFont(18, weight: .semibold)
+                .foregroundColor(.white)
 
             if inspector.settings.isEmpty {
                 Text("No telemetry preferences found.")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.8))
             } else {
                 ForEach(inspector.settings) { setting in
                     HStack {
@@ -46,16 +49,17 @@ struct TelemetryInspectorView: View {
                             Text(setting.name)
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
+                                .foregroundColor(.white)
                             Text(setting.detail)
                                 .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.white.opacity(0.7))
                         }
                         Spacer()
                         Text(setting.status.label)
                             .font(.caption)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
-                            .background(statusColor(setting.status).opacity(0.15))
+                            .background(statusColor(setting.status).opacity(0.2))
                             .foregroundColor(statusColor(setting.status))
                             .cornerRadius(6)
                     }
@@ -64,19 +68,19 @@ struct TelemetryInspectorView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.controlBackgroundColor))
-        .cornerRadius(12)
+        .glassCard()
     }
 
     private var eventsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Recent Telemetry Files")
-                .font(.headline)
+                .appFont(18, weight: .semibold)
+                .foregroundColor(.white)
 
             if inspector.recentEvents.isEmpty {
                 Text("No recent analytics, diagnostics, or crash report files found.")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.8))
             } else {
                 List(inspector.recentEvents) { event in
                     VStack(alignment: .leading, spacing: 4) {
@@ -107,8 +111,7 @@ struct TelemetryInspectorView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.controlBackgroundColor))
-        .cornerRadius(12)
+        .glassCard()
     }
 
     private func statusColor(_ status: TelemetryStatus) -> Color {

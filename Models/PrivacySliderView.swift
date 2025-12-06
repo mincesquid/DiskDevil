@@ -9,6 +9,7 @@ struct PrivacySliderView: View {
     @EnvironmentObject var subscriptionManager: SubscriptionManager
     @EnvironmentObject var privacyEngine: PrivacyEngine
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismiss) private var dismiss
     @State private var selectedLevel: Double = 1
 
     var body: some View {
@@ -18,15 +19,18 @@ struct PrivacySliderView: View {
                 VStack(spacing: 8) {
                     Image(systemName: "slider.horizontal.3")
                         .font(.system(size: 50))
-                        .foregroundColor(.blue)
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.3), radius: 12, x: 0, y: 8)
 
                     Text("Privacy Protection Slider")
-                        .font(.title)
-                        .fontWeight(.bold)
+                        .font(.largeTitle)
+                        .fontWeight(.heavy)
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.35), radius: 8, x: 0, y: 4)
 
                     Text("The Xenophobia Scale")
                         .font(.title3)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.8))
                 }
                 .padding(.top, 20)
 
@@ -141,22 +145,38 @@ struct PrivacySliderView: View {
                     }
                 }
                 .padding()
-                .background(Color(.windowBackgroundColor))
-                .cornerRadius(12)
+                .glassCard()
 
                 // Level breakdown
                 LevelBreakdownView()
+                    .glassCard()
 
                 // Statistics
                 if privacyEngine.isActive {
                     StatisticsCard()
+                        .glassCard()
+                }
+
+                // Actions
+                HStack(spacing: 12) {
+                    Button("Apply") {
+                        applySelection()
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button("Done") {
+                        dismiss()
+                    }
                 }
             }
             .padding()
+            .frame(maxWidth: .infinity)
         }
         .onAppear {
             selectedLevel = Double(privacyEngine.currentLevel)
         }
+        .padding()
+        .aeroBackground()
     }
 
     func canAccessLevel(_ level: Int) -> Bool {
@@ -175,6 +195,10 @@ struct PrivacySliderView: View {
 
     private func openUpgradeWindow() {
         openWindow(id: "upgrade")
+    }
+
+    private func applySelection() {
+        privacyEngine.setLevel(Int(selectedLevel))
     }
 }
 
