@@ -87,50 +87,127 @@ enum AuditPhase {
     var rootCause: String {
         switch self {
         case .systemIntegrity:
-            return "System Integrity Protection (SIP) has been manually disabled, likely by booting into Recovery Mode and running 'csrutil disable'. This removes a critical security layer that protects system files from modification."
+            return """
+            System Integrity Protection (SIP) has been manually disabled, likely by booting into Recovery Mode \
+            and running 'csrutil disable'. This removes a critical security layer that protects system files \
+            from modification.
+            """
         case .securitySettings:
-            return "The macOS Application Firewall is currently disabled. This may have been turned off manually in System Preferences > Security & Privacy > Firewall, or it was never enabled after installation."
+            return """
+            The macOS Application Firewall is currently disabled. This may have been turned off manually in \
+            System Preferences > Security & Privacy > Firewall, or it was never enabled after installation.
+            """
         case .networkSecurity:
-            return "A process on your system is communicating with an external server that's not commonly seen in legitimate applications. This could be legitimate software phoning home, or malware establishing command & control communication."
+            return """
+            A process on your system is communicating with an external server that's not commonly seen in \
+            legitimate applications. This could be legitimate software phoning home, or malware establishing \
+            command & control communication.
+            """
         case .privacySettings:
-            return "macOS analytics and diagnostic reporting is enabled, sending usage data, crash reports, and telemetry to Apple servers. While legitimate, this reduces privacy and shares information about your system usage."
+            return """
+            macOS analytics and diagnostic reporting is enabled, sending usage data, crash reports, and \
+            telemetry to Apple servers. While legitimate, this reduces privacy and shares information about \
+            your system usage.
+            """
         case .processAnalysis:
-            return "A running process was detected that doesn't match known system processes or common applications. This could be legitimate third-party software, developer tools, or potentially malicious code that's executing on your system."
+            return """
+            A running process was detected that doesn't match known system processes or common applications. \
+            This could be legitimate third-party software, developer tools, or potentially malicious code \
+            that's executing on your system.
+            """
         case .fileSystemAudit:
-            return "A system file or directory has world-writable permissions (chmod 777 or similar), allowing any user or process to modify it. This violates the principle of least privilege and creates a security vulnerability."
+            return """
+            A system file or directory has world-writable permissions (chmod 777 or similar), allowing any \
+            user or process to modify it. This violates the principle of least privilege and creates a \
+            security vulnerability.
+            """
         case .kernelInspection:
-            return "A kernel extension (kext) is loaded that's not signed by Apple. This could be legitimate third-party drivers (GPU, network adapters) or potentially malicious code running with kernel-level privileges."
+            return """
+            A kernel extension (kext) is loaded that's not signed by Apple. This could be legitimate \
+            third-party drivers (GPU, network adapters) or potentially malicious code running with \
+            kernel-level privileges.
+            """
         case .backdoorDetection:
-            return "A LaunchAgent or LaunchDaemon plist file was found that establishes persistence, ensuring a program automatically runs when you log in or when the system boots. This is a common backdoor technique."
+            return """
+            A LaunchAgent or LaunchDaemon plist file was found that establishes persistence, ensuring a \
+            program automatically runs when you log in or when the system boots. This is a common backdoor \
+            technique.
+            """
         case .rootkitScan:
-            return "System binaries or kernel structures match known rootkit signatures. Rootkits are malicious software that hide their presence by modifying core system components, making them extremely difficult to detect."
+            return """
+            System binaries or kernel structures match known rootkit signatures. Rootkits are malicious \
+            software that hide their presence by modifying core system components, making them extremely \
+            difficult to detect.
+            """
         default:
-            return "A security vulnerability has been identified that requires investigation to determine the root cause and appropriate remediation steps."
+            return """
+            A security vulnerability has been identified that requires investigation to determine the root \
+            cause and appropriate remediation steps.
+            """
         }
     }
 
     var securityImpact: String {
         switch self {
         case .systemIntegrity:
-            return "CRITICAL RISK: Without SIP, malware can modify system files, inject code into Apple processes, install rootkits, and bypass macOS security features. Attackers can persistently compromise your system at the deepest level."
+            return """
+            CRITICAL RISK: Without SIP, malware can modify system files, inject code into Apple processes, \
+            install rootkits, and bypass macOS security features. Attackers can persistently compromise your \
+            system at the deepest level.
+            """
         case .securitySettings:
-            return "HIGH RISK: Without a firewall, your Mac accepts incoming network connections from any source. Malware, remote attackers, and network worms can directly connect to vulnerable services running on your machine."
+            return """
+            HIGH RISK: Without a firewall, your Mac accepts incoming network connections from any source. \
+            Malware, remote attackers, and network worms can directly connect to vulnerable services running \
+            on your machine.
+            """
         case .networkSecurity:
-            return "MEDIUM-HIGH RISK: If this connection is malicious, it could be exfiltrating sensitive data, downloading additional malware payloads, or receiving commands from an attacker's server. Legitimate software may also exhibit this behavior."
+            return """
+            MEDIUM-HIGH RISK: If this connection is malicious, it could be exfiltrating sensitive data, \
+            downloading additional malware payloads, or receiving commands from an attacker's server. \
+            Legitimate software may also exhibit this behavior.
+            """
         case .privacySettings:
-            return "LOW-MEDIUM RISK: Apple receives detailed information about your system usage, installed software, crash data, and potentially personally identifiable information. This reduces your privacy but doesn't directly compromise security."
+            return """
+            LOW-MEDIUM RISK: Apple receives detailed information about your system usage, installed software, \
+            crash data, and potentially personally identifiable information. This reduces your privacy but \
+            doesn't directly compromise security.
+            """
         case .processAnalysis:
-            return "UNKNOWN RISK: If this process is malicious, it could be: stealing data, keylogging, taking screenshots, running a cryptominer, establishing backdoors, or acting as a trojan. Requires investigation to determine legitimacy."
+            return """
+            UNKNOWN RISK: If this process is malicious, it could be: stealing data, keylogging, taking \
+            screenshots, running a cryptominer, establishing backdoors, or acting as a trojan. Requires \
+            investigation to determine legitimacy.
+            """
         case .fileSystemAudit:
-            return "HIGH RISK: Any user or malicious process can modify this file, potentially replacing system binaries with trojaned versions, modifying configuration files to disable security features, or escalating privileges."
+            return """
+            HIGH RISK: Any user or malicious process can modify this file, potentially replacing system \
+            binaries with trojaned versions, modifying configuration files to disable security features, or \
+            escalating privileges.
+            """
         case .kernelInspection:
-            return "CRITICAL RISK: Kernel extensions run with Ring 0 privileges—complete control over your system. A malicious kext can hide processes, intercept all network traffic, log keystrokes, disable security features, and survive reboots."
+            return """
+            CRITICAL RISK: Kernel extensions run with Ring 0 privileges—complete control over your system. \
+            A malicious kext can hide processes, intercept all network traffic, log keystrokes, disable \
+            security features, and survive reboots.
+            """
         case .backdoorDetection:
-            return "HIGH RISK: This persistence mechanism ensures malware survives reboots and user logouts. Even if you 'quit' the malicious application, it will automatically restart. This is how ransomware and spyware maintain access."
+            return """
+            HIGH RISK: This persistence mechanism ensures malware survives reboots and user logouts. Even if \
+            you 'quit' the malicious application, it will automatically restart. This is how ransomware and \
+            spyware maintain access.
+            """
         case .rootkitScan:
-            return "CRITICAL RISK: Rootkits operate at the kernel level with complete control over your system. They can hide files, processes, network connections, and their own presence. Standard antivirus cannot detect them reliably."
+            return """
+            CRITICAL RISK: Rootkits operate at the kernel level with complete control over your system. They \
+            can hide files, processes, network connections, and their own presence. Standard antivirus cannot \
+            detect them reliably.
+            """
         default:
-            return "The security impact varies depending on the specific vulnerability. Investigation required to assess the full risk to your system."
+            return """
+            The security impact varies depending on the specific vulnerability. Investigation required to \
+            assess the full risk to your system.
+            """
         }
     }
 
@@ -144,7 +221,8 @@ enum AuditPhase {
             3. Run: csrutil enable
             4. Restart your Mac normally
 
-            WARNING: Some legitimate software (VM tools, development tools) may require SIP to be disabled. Only re-enable if you understand the implications.
+            WARNING: Some legitimate software (VM tools, development tools) may require SIP to be disabled. \
+            Only re-enable if you understand the implications.
             """
         case .securitySettings:
             return """
@@ -241,10 +319,14 @@ enum AuditPhase {
             5. Restore personal files from backup
             6. Reinstall applications from trusted sources only
 
-            DO NOT attempt to 'clean' a rootkit infection. Rootkits modify system binaries and can survive removal attempts. Complete reinstall is the only reliable solution.
+            DO NOT attempt to 'clean' a rootkit infection. Rootkits modify system binaries and can \
+            survive removal attempts. Complete reinstall is the only reliable solution.
             """
         default:
-            return "Specific remediation steps not available. Please investigate the finding details and consult security documentation for appropriate response procedures."
+            return """
+            Specific remediation steps not available. Please investigate the finding details and consult \
+            security documentation for appropriate response procedures.
+            """
         }
     }
 

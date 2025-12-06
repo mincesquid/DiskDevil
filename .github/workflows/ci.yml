@@ -41,7 +41,7 @@ jobs:
           echo "Attempting to detect build system..."
           if [ -f Package.swift ]; then
             echo "Detected Swift Package Manager (Package.swift)"
-            swift build --strip-dead-code
+            swift build
             swift test
           elif ls *.xcodeproj 1> /dev/null 2>&1; then
             echo "Detected Xcode project file; attempting xcodebuild"
