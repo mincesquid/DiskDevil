@@ -118,7 +118,11 @@ class StoreKitManager: ObservableObject {
 
                 // Get expiration date
                 if let expiration = transaction.expirationDate {
-                    if expirationDate == nil || expiration > expirationDate! {
+                    if let currentExpiration = expirationDate {
+                        if expiration > currentExpiration {
+                            expirationDate = expiration
+                        }
+                    } else {
                         expirationDate = expiration
                     }
                 }
