@@ -148,7 +148,7 @@ class StoreKitManager: ObservableObject {
 
     private func observeTransactionUpdates() -> Task<Void, Never> {
         Task.detached {
-            for await result in Transaction.updates {
+            for await _ in Transaction.updates {
                 await self.updateSubscriptionStatus()
             }
         }
