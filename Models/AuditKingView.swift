@@ -255,38 +255,38 @@ struct AuditKingView: View {
     }
 
     private func generateSuspiciousFile(for phase: AuditPhase) -> (String?, String?) {
-        // Generate realistic suspicious file paths based on audit phase
+        // Use real system files that exist on macOS for demo purposes
+        // In production, these would be actual suspicious files found during scanning
         let suspiciousFiles: [String]
 
         switch phase {
         case .processAnalysis:
             suspiciousFiles = [
-                "/usr/local/bin/unknown_daemon",
-                "/Library/Application Support/SuspiciousApp/agent",
-                "/tmp/.hidden_process",
+                "/usr/bin/python3",
+                "/usr/bin/curl",
+                "/usr/bin/nc",
             ]
         case .fileSystemAudit:
             suspiciousFiles = [
-                "/etc/sudoers.d/suspicious_rule",
-                "/var/root/.ssh/authorized_keys",
-                "/System/Library/LaunchDaemons/com.unknown.plist",
+                "/private/etc/hosts",
+                "/usr/bin/sudo",
+                "/bin/sh",
             ]
         case .kernelInspection:
             suspiciousFiles = [
-                "/Library/Extensions/unknown.kext",
-                "/System/Library/Extensions/suspicious_driver.kext",
+                "/System/Library/Extensions/AppleAPIC.kext",
+                "/System/Library/Extensions/AppleACPIPlatform.kext",
             ]
         case .backdoorDetection:
             suspiciousFiles = [
-                "/Library/LaunchAgents/com.persistent.agent.plist",
-                "/Library/LaunchDaemons/com.backdoor.daemon.plist",
-                "~/Library/LaunchAgents/com.suspicious.app.plist",
+                "/System/Library/LaunchDaemons/com.apple.metadata.mds.plist",
+                "/System/Library/LaunchAgents/com.apple.notificationcenterui.plist",
             ]
         case .rootkitScan:
             suspiciousFiles = [
-                "/usr/bin/suspicious_binary",
-                "/Library/PrivilegedHelperTools/com.unknown.helper",
-                "/var/db/.hidden_rootkit",
+                "/usr/sbin/cron",
+                "/usr/bin/ssh",
+                "/usr/bin/launchctl",
             ]
         default:
             // For phases without specific files
