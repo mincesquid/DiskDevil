@@ -7,6 +7,7 @@ import SwiftUI
 
 struct UpgradeView: View {
     @EnvironmentObject var subscriptionManager: SubscriptionManager
+    @EnvironmentObject var usageLimits: UsageLimits
     @Environment(\.openWindow) private var openWindow
     @State private var selectedPlan: SubscriptionTier = .premium
     @State private var isAnnual = true
@@ -53,6 +54,12 @@ struct UpgradeView: View {
                 }
                 .padding(.top, 40)
 
+                // What You're Missing (Free Users Only)
+                if subscriptionManager.tier == .free {
+                    LimitationsCard(usageLimits: usageLimits)
+                        .glassCard()
+                }
+
                 // Billing Toggle
                 HStack {
                     Text("Monthly")
@@ -84,10 +91,12 @@ struct UpgradeView: View {
                         isAnnual: isAnnual,
                         isSelected: selectedPlan == .premium,
                         features: [
+                            "Unlimited hidden file reveals",
+                            "Unlimited network monitoring",
+                            "Unlimited security scans",
                             "Privacy levels 1-9",
-                            "Network monitoring",
-                            "Recovery tools",
-                            "Priority support",
+                            "Recovery tools & system repair",
+                            "Priority email support",
                         ]
                     ) {
                         selectedPlan = .premium
@@ -100,11 +109,12 @@ struct UpgradeView: View {
                         isAnnual: isAnnual,
                         isSelected: selectedPlan == .elite,
                         features: [
-                            "All Premium features",
-                            "Privacy level 10 (MAXIMUM)",
-                            "Threat hunting",
-                            "API access",
-                            "Incident response",
+                            "Everything in Premium",
+                            "Privacy level 10 (MAXIMUM PARANOIA)",
+                            "Advanced threat detection",
+                            "Real-time network filtering",
+                            "Telemetry blocking & privacy hardening",
+                            "Priority live chat support",
                         ],
                         badge: "BEST VALUE"
                     ) {
@@ -269,6 +279,89 @@ struct PlanCard: View {
         .glassCard()
     }
 }
+
+// MARK: - Limitations Card
+
+struct LimitationsCard: View {
+    @ObservedObject var usageLimits: UsageLimits
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(.orange)
+                    .font(.title3)
+
+                Text("You're currently limited to:")
+                    .font(.headline)
+                    .foregroundColor(.white)
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                LimitationRow(
+                    icon: "eye.slash",
+                    text: "\(usageLimits.hiddenFilesRevealsRemaining)/3 hidden file reveals left today",
+                    color: usageLimits.hiddenFilesRevealsRemaining > 0 ? .orange : .red
+                )
+
+                LimitationRow(
+                    icon: "network",
+                    text: "\(usageLimits.networkMonitorUsesRemaining)/3 network monitoring sessions left",
+                    color: usageLimits.networkMonitorUsesRemaining > 0 ? .orange : .red
+                )
+
+                LimitationRow(
+                    icon: "checkmark.shield",
+                    text: "\(usageLimits.securityScansRemaining)/2 security scans remaining",
+                    color: usageLimits.securityScansRemaining > 0 ? .orange : .red
+                )
+
+                LimitationRow(
+                    icon: "shield.slash",
+                    text: "Privacy protection capped at Level 3",
+                    color: .red
+                )
+            }
+
+            Divider()
+                .background(Color.white.opacity(0.3))
+
+            HStack {
+                Image(systemName: "infinity.circle.fill")
+                    .foregroundColor(AeroTheme.neon)
+                Text("Upgrade for unlimited access to all features")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+            }
+
+            Text("Resets in \(usageLimits.timeUntilReset())")
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.6))
+        }
+        .padding()
+    }
+}
+
+struct LimitationRow: View {
+    let icon: String
+    let text: String
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(color)
+                .frame(width: 24)
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.9))
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Premium Upgrade Placeholder
 
 struct PremiumUpgradeView: View {
     let feature: String

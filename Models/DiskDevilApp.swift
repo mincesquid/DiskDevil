@@ -13,6 +13,7 @@ struct DiskDevilApp: App {
     @StateObject private var privacyEngine = PrivacyEngine()
     @StateObject private var permissionManager = PermissionManager()
     @StateObject private var networkMonitor = NetworkMonitorService()
+    @StateObject private var usageLimits = UsageLimits()
 
     var body: some Scene {
         WindowGroup {
@@ -21,8 +22,19 @@ struct DiskDevilApp: App {
                 .environmentObject(privacyEngine)
                 .environmentObject(permissionManager)
                 .environmentObject(networkMonitor)
+                .environmentObject(usageLimits)
                 .environment(\.font, AeroTheme.baseFont)
                 .frame(minWidth: 900, minHeight: 700)
+                .onAppear {
+                    Task {
+                        await subscriptionManager.loadProducts()
+
+                        // Unlock all limits for premium/elite users
+                        if subscriptionManager.tier != .free {
+                            usageLimits.unlockAll()
+                        }
+                    }
+                }
         }
         .windowStyle(.hiddenTitleBar)
         .commands {
@@ -39,6 +51,7 @@ struct DiskDevilApp: App {
                 .environmentObject(subscriptionManager)
                 .environmentObject(privacyEngine)
                 .environmentObject(permissionManager)
+                .environmentObject(usageLimits)
                 .environment(\.font, AeroTheme.baseFont)
         }
         .windowResizability(.contentSize)
@@ -48,6 +61,7 @@ struct DiskDevilApp: App {
                 .environmentObject(subscriptionManager)
                 .environmentObject(privacyEngine)
                 .environmentObject(permissionManager)
+                .environmentObject(usageLimits)
                 .environment(\.font, AeroTheme.baseFont)
         }
         .windowResizability(.contentSize)
@@ -55,6 +69,7 @@ struct DiskDevilApp: App {
         WindowGroup("Upgrade", id: "upgrade") {
             UpgradeView()
                 .environmentObject(subscriptionManager)
+                .environmentObject(usageLimits)
                 .environment(\.font, AeroTheme.baseFont)
         }
         .windowResizability(.contentSize)
@@ -65,6 +80,7 @@ struct DiskDevilApp: App {
                 .environmentObject(privacyEngine)
                 .environmentObject(networkMonitor)
                 .environmentObject(permissionManager)
+                .environmentObject(usageLimits)
         }
         .menuBarExtraStyle(.window)
     }

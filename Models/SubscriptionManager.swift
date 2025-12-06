@@ -5,6 +5,7 @@
 
 import Combine
 import Foundation
+import StoreKit
 
 enum SubscriptionTier: String, Codable {
     case free = "Free"
@@ -38,9 +39,21 @@ class SubscriptionManager: ObservableObject {
     @Published var isActive: Bool = true
 
     private var cancellables = Set<AnyCancellable>()
+    private let storeKit: StoreKitManager
 
-    init() {
+    init(storeKit: StoreKitManager) {
+        self.storeKit = storeKit
         loadSubscriptionStatus()
+
+        // Observe StoreKit subscription status
+        Task {
+            await storeKit.updateSubscriptionStatus()
+            await syncWithStoreKit()
+        }
+    }
+
+    convenience init() {
+        self.init(storeKit: StoreKitManager())
     }
 
     func loadSubscriptionStatus() {
@@ -84,21 +97,41 @@ class SubscriptionManager: ObservableObject {
         }
     }
 
-    // Mock subscription purchase - replace with real implementation
+    // MARK: - StoreKit Integration
+
+    func loadProducts() async {
+        await storeKit.loadProducts()
+    }
+
     func purchaseSubscription(tier: SubscriptionTier, isAnnual: Bool = false) async throws {
-        // Simulate API call
-        try await Task.sleep(nanoseconds: 1_000_000_000)
+        guard let product = storeKit.product(for: tier, isYearly: isAnnual) else {
+            throw StoreError.productNotFound
+        }
 
-        let duration: TimeInterval = isAnnual ? 365 * 24 * 60 * 60 : 30 * 24 * 60 * 60
-        let expiration = Date().addingTimeInterval(duration)
-
-        await MainActor.run {
-            updateSubscription(tier: tier, expirationDate: expiration)
+        let transaction = try await storeKit.purchase(product)
+        if transaction != nil {
+            await syncWithStoreKit()
         }
     }
 
     func restoreSubscription() async throws {
-        // Implement restore logic
-        try await Task.sleep(nanoseconds: 500_000_000)
+        await storeKit.restorePurchases()
+        await syncWithStoreKit()
+    }
+
+    private func syncWithStoreKit() async {
+        await storeKit.updateSubscriptionStatus()
+
+        await MainActor.run {
+            if let status = storeKit.subscriptionStatus {
+                updateSubscription(tier: status.tier, expirationDate: status.expirationDate)
+            }
+        }
+    }
+
+    // MARK: - Product Access
+
+    func getStoreKitManager() -> StoreKitManager {
+        storeKit
     }
 }
