@@ -45,7 +45,7 @@ DiskDevil is a macOS application that provides:
 
 ```
 DiskDevil/
-├── Models/              # All Swift source files (views, models, managers)
+├── Models/              # Swift source files (views, models, managers, engines)
 │   ├── *View.swift     # SwiftUI view files
 │   ├── *Manager.swift  # Business logic managers
 │   ├── *Engine.swift   # Core functionality engines
@@ -54,7 +54,7 @@ DiskDevil/
 ├── scripts/            # Helper scripts for development
 ├── .github/            # GitHub configuration
 │   └── workflows/      # CI/CD workflows
-└── Package.swift       # SPM package definition
+└── Package.swift       # SPM package definition (root level)
 ```
 
 ## Development Workflow
