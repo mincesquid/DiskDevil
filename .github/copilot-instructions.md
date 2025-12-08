@@ -45,11 +45,12 @@ DiskDevil is a macOS application that provides:
 
 ```
 DiskDevil/
-├── Models/              # Swift source files (views, models, managers, engines)
+├── Models/              # Main executable source code
+│   ├── DiskDevilApp.swift  # App entry point
 │   ├── *View.swift     # SwiftUI view files
 │   ├── *Manager.swift  # Business logic managers
 │   ├── *Engine.swift   # Core functionality engines
-│   └── DiskDevilApp.swift  # Main app entry point
+│   └── Logger.swift    # Centralized logging utilities
 ├── Tests/              # Unit tests
 ├── scripts/            # Helper scripts for development
 ├── .github/            # GitHub configuration
@@ -89,9 +90,12 @@ DiskDevil/
 ## Architecture Patterns
 
 ### State Management
-- Use `@StateObject` for creating observable objects in views
+- Use `@StateObject` for creating observable objects (e.g., in `DiskDevilApp.swift`)
+- Use `@EnvironmentObject` for dependency injection from parent views
 - Use `@ObservedObject` for passing observable objects
-- Use `@Published` for properties that trigger view updates
+- Use `@State` for local view state
+- Use `@Binding` for two-way data binding between views
+- Use `@Published` for properties in `ObservableObject` that trigger view updates
 - Keep state as local as possible; lift only when necessary
 
 ### Managers and Engines
@@ -157,7 +161,7 @@ When adding features, respect tier limitations and check subscription status app
 
 3. **StoreKit**: Subscription implementation uses StoreKit 2 (see `STOREKIT_SETUP.md`)
 
-4. **Logging**: Use the `Logger.swift` utility for consistent logging
+4. **Logging**: Use the `AppLogger` enum from `Models/Logger.swift` for consistent, category-based logging (e.g., `AppLogger.security.info("message")`, `AppLogger.storeKit.error("error")`)
 
 ## Security Considerations
 
