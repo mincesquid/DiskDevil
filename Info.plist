@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- App Identity -->
+	<key>CFBundleDisplayName</key>
+	<string>DiskDevil</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+
+	<!-- Minimum OS Version -->
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+
+	<!-- App Category for Mac App Store -->
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
+
+	<!-- High Resolution Support -->
+	<key>NSHighResolutionCapable</key>
+	<true/>
+
+	<!-- Principal Class -->
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+
+	<!-- Enable App Sandbox -->
+	<key>NSSupportsAutomaticTermination</key>
+	<true/>
+	<key>NSSupportsSuddenTermination</key>
+	<true/>
+
+	<!-- Human-Readable Permission Descriptions -->
+
+	<!-- Full Disk Access -->
+	<key>NSSystemAdministrationUsageDescription</key>
+	<string>DiskDevil requires system administration access to scan system files for security threats, perform deep cleanup operations, and recover deleted files. This permission is essential for the app's core security and recovery features.</string>
+
+	<!-- Files and Folders Access -->
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>DiskDevil needs access to your Documents folder to scan for hidden files, security threats, and perform cleanup operations to protect your privacy.</string>
+
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>DiskDevil scans your Downloads folder for potentially harmful files and helps clean up unwanted downloads to free disk space.</string>
+
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>DiskDevil analyzes your Desktop for security issues, hidden files, and disk space optimization opportunities.</string>
+
+	<key>NSRemovableVolumesUsageDescription</key>
+	<string>DiskDevil can scan external drives and USB devices for security threats and help secure files on removable media.</string>
+
+	<!-- Network Access -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>DiskDevil monitors network connections to detect suspicious activity, block tracking domains, and enhance your privacy. Network access is required for the Privacy Protection and Network Monitor features.</string>
+
+	<!-- System Extension -->
+	<key>NSSystemExtensionUsageDescription</key>
+	<string>DiskDevil uses a system extension to provide real-time network filtering and advanced privacy protection. This extension blocks trackers, telemetry, and malicious connections at the system level.</string>
+
+	<!-- AppleEvents (for automation) -->
+	<key>NSAppleEventsUsageDescription</key>
+	<string>DiskDevil may send Apple Events to perform system cleanup tasks and integrate with macOS system utilities.</string>
+
+	<!-- Menu Bar Icon -->
+	<key>LSUIElement</key>
+	<false/>
+
+	<!-- URL Schemes (for deep linking) -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.diskdevil.url</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>diskdevil</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- App Transport Security -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+	</dict>
+
+	<!-- Document Types (if supporting file opening) -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Disk Image</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.disk-image</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- Export Compliance -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+</dict>
+</plist>
