@@ -32,6 +32,16 @@ struct PrivacySliderView: View {
                     Text("The Xenophobia Scale")
                         .font(.title3)
                         .foregroundColor(.white.opacity(0.8))
+                    
+                    // Security Disclaimer
+                    Text("⚠️ Network filtering is currently simulated for demonstration")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.orange.opacity(0.15))
+                        .cornerRadius(8)
+                        .padding(.top, 8)
                 }
                 .padding(.top, 20)
 

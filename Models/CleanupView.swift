@@ -160,10 +160,79 @@ struct CleanupView: View {
 
     private static func deleteItem(at url: URL) throws {
         let fm = FileManager.default
+        
+        // Security: Validate path before deletion
+        try validatePathForDeletion(url)
+        
         do {
             try fm.trashItem(at: url, resultingItemURL: nil)
         } catch {
             try fm.removeItem(at: url)
+        }
+    }
+    
+    /// Validates that a path is safe to delete
+    private static func validatePathForDeletion(_ url: URL) throws {
+        let fm = FileManager.default
+        let path = url.path
+        
+        // Resolve symlinks to prevent deleting unexpected targets
+        let resolvedPath: String
+        if let resolved = try? fm.destinationOfSymbolicLink(atPath: path) {
+            resolvedPath = resolved
+        } else {
+            resolvedPath = path
+        }
+        
+        // List of critical system paths that should never be deleted
+        let protectedPaths = [
+            "/System",
+            "/Library/System",
+            "/usr",
+            "/bin",
+            "/sbin",
+            "/etc",
+            "/var/root",
+            "/private/var/root",
+            "/Applications/Utilities",
+            "/System/Library",
+        ]
+        
+        // Check if path starts with any protected path
+        for protectedPath in protectedPaths {
+            if resolvedPath.hasPrefix(protectedPath) {
+                throw NSError(
+                    domain: "DiskDevil.CleanupError",
+                    code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "Cannot delete system protected files: \(resolvedPath)"]
+                )
+            }
+        }
+        
+        // Ensure path is within expected cleanup directories
+        let allowedPaths = [
+            NSHomeDirectory() + "/Library/Caches",
+            NSHomeDirectory() + "/Library/Logs",
+            NSHomeDirectory() + "/Downloads",
+            NSHomeDirectory() + "/.Trash",
+            NSTemporaryDirectory(),
+            "/tmp",
+            "/Library/Caches",
+            "/Library/Logs",
+            NSHomeDirectory() + "/Library/Developer/Xcode/DerivedData",
+            NSHomeDirectory() + "/Library/DiagnosticReports",
+        ]
+        
+        let isInAllowedPath = allowedPaths.contains { allowedPath in
+            path.hasPrefix(allowedPath)
+        }
+        
+        if !isInAllowedPath {
+            throw NSError(
+                domain: "DiskDevil.CleanupError",
+                code: 2,
+                userInfo: [NSLocalizedDescriptionKey: "File is outside allowed cleanup directories: \(path)"]
+            )
         }
     }
 
