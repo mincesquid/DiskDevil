@@ -18,44 +18,16 @@
 	<key>com.apple.security.files.downloads.read-write</key>
 	<true/>
 
-	<!-- Temporary Exception for Full Disk Access - Remove if using TCC prompt -->
-	<!-- Note: For Mac App Store, Full Disk Access must be granted by user in System Settings -->
-	<!-- This entitlement requests permission to access protected files -->
-	<key>com.apple.security.temporary-exception.files.absolute-path.read-write</key>
-	<array>
-		<string>/Library/</string>
-		<string>/System/Library/</string>
-		<string>/private/var/</string>
-	</array>
-
 	<!-- System Extension & Network Extension -->
 	<!-- NOTE: These require special approval from Apple for Mac App Store -->
-	<!-- You may need to apply for these entitlements separately -->
 	<key>com.apple.developer.networking.networkextension</key>
 	<array>
-		<string>packet-tunnel-provider</string>
 		<string>content-filter-provider</string>
+		<string>packet-tunnel-provider</string>
 		<string>dns-proxy</string>
 	</array>
 
 	<key>com.apple.developer.system-extension.install</key>
-	<true/>
-
-	<!-- Allow DYLD environment variables (for debugging) -->
-	<!-- REMOVE THIS for production/App Store builds -->
-	<!-- <key>com.apple.security.get-task-allow</key>
-	<true/> -->
-
-	<!-- Hardware Access -->
-	<key>com.apple.security.device.usb</key>
-	<true/>
-
-	<!-- Apple Events (for system automation) -->
-	<key>com.apple.security.automation.apple-events</key>
-	<true/>
-
-	<!-- Print (if needed for reports) -->
-	<key>com.apple.security.print</key>
 	<true/>
 
 	<!-- In-App Purchases -->
@@ -70,28 +42,18 @@
 		<string>group.com.diskdevil.shared</string>
 	</array>
 
-	<!-- Hardened Runtime (required for notarization) -->
-	<!-- These are typically set in Xcode build settings, not entitlements -->
-	<!-- But documenting here for reference -->
-
-	<!-- Disable Library Validation - ONLY if needed, reduces security -->
-	<!-- <key>com.apple.security.cs.disable-library-validation</key>
-	<true/> -->
-
-	<!-- Allow JIT compilation - ONLY if needed -->
-	<!-- <key>com.apple.security.cs.allow-jit</key>
-	<true/> -->
-
-	<!-- Allow unsigned executable memory - AVOID if possible -->
-	<!-- <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
-	<true/> -->
-
-	<!-- Allow DYLD environment variables - Debug only -->
-	<!-- <key>com.apple.security.cs.allow-dyld-environment-variables</key>
-	<true/> -->
-
-	<!-- Disable executable page protection - AVOID -->
-	<!-- <key>com.apple.security.cs.disable-executable-page-protection</key>
-	<true/> -->
+	<!-- PRODUCTION CONFIGURATION -->
+	<!-- The following entitlements have been removed for production readiness: -->
+	<!-- - com.apple.security.temporary-exception.files.absolute-path.read-write -->
+	<!--   Full Disk Access must now be granted by user in System Settings -->
+	<!-- - com.apple.security.device.usb (not needed) -->
+	<!-- - com.apple.security.automation.apple-events (not needed) -->
+	<!-- - com.apple.security.print (not needed) -->
+	
+	<!-- For Full Disk Access: -->
+	<!-- Users must manually grant permission in System Settings > Privacy & Security -->
+	<!-- This is the recommended approach for App Store distribution -->
+	
+	<!-- Hardened Runtime options are configured in Xcode build settings -->
 </dict>
 </plist>
