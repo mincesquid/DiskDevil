@@ -204,6 +204,26 @@ final class NetworkMonitorService: ObservableObject {
     }
 
     private func runCommand(_ launchPath: String, arguments: [String]) -> String? {
+        // Security: Validate command path is in allowed system directories
+        let allowedPaths = ["/usr/sbin/", "/usr/bin/", "/usr/libexec/"]
+        guard allowedPaths.contains(where: { launchPath.hasPrefix($0) }) else {
+            return nil
+        }
+        
+        // Security: Validate arguments don't contain shell metacharacters or path traversal
+        for arg in arguments {
+            // Check for shell metacharacters that could be dangerous
+            let dangerousChars = CharacterSet(charactersIn: ";|&$`<>(){}[]\\'\"\n")
+            if arg.rangeOfCharacter(from: dangerousChars) != nil {
+                return nil
+            }
+            
+            // Check for path traversal attempts
+            if arg.contains("../") || arg.contains("/..") {
+                return nil
+            }
+        }
+        
         let process = Process()
         process.executableURL = URL(fileURLWithPath: launchPath)
         process.arguments = arguments
@@ -487,6 +507,26 @@ struct SecurityScanner {
     }
 
     private func runCommand(_ launchPath: String, _ arguments: [String]) -> String? {
+        // Security: Validate command path is in allowed system directories
+        let allowedPaths = ["/usr/sbin/", "/usr/bin/", "/usr/libexec/"]
+        guard allowedPaths.contains(where: { launchPath.hasPrefix($0) }) else {
+            return nil
+        }
+        
+        // Security: Validate arguments don't contain shell metacharacters or path traversal
+        for arg in arguments {
+            // Check for shell metacharacters that could be dangerous
+            let dangerousChars = CharacterSet(charactersIn: ";|&$`<>(){}[]\\'\"\n")
+            if arg.rangeOfCharacter(from: dangerousChars) != nil {
+                return nil
+            }
+            
+            // Check for path traversal attempts
+            if arg.contains("../") || arg.contains("/..") {
+                return nil
+            }
+        }
+        
         let process = Process()
         process.executableURL = URL(fileURLWithPath: launchPath)
         process.arguments = arguments

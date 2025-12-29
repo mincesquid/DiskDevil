@@ -89,10 +89,15 @@ class SubscriptionManager: ObservableObject {
     }
 
     func hasAccess(to level: Int) -> Bool {
-        level <= tier.maxPrivacyLevel
+        // Verify subscription with StoreKit periodically
+        verifySubscriptionInBackground()
+        return level <= tier.maxPrivacyLevel
     }
 
     func canAccessFeature(_ feature: String) -> Bool {
+        // Verify subscription with StoreKit periodically
+        verifySubscriptionInBackground()
+        
         // Add feature-specific logic
         switch feature {
         case "network_monitor",
@@ -106,6 +111,15 @@ class SubscriptionManager: ObservableObject {
             tier == .elite
         default:
             true
+        }
+    }
+    
+    /// Verify subscription status with StoreKit in background
+    /// This helps prevent local manipulation of subscription tier
+    private func verifySubscriptionInBackground() {
+        Task.detached(priority: .background) { [weak self] in
+            guard let self = self else { return }
+            await self.syncWithStoreKit()
         }
     }
 
