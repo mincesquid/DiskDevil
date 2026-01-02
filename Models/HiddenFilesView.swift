@@ -189,6 +189,14 @@ struct HiddenFilesView: View {
             usageLimits.recordHiddenFileReveal()
         }
 
+        // Validate URL to prevent malicious file access
+        guard url.isFileURL,
+              !url.path.contains("../"),
+              !url.path.contains("/.."),
+              FileManager.default.fileExists(atPath: url.path) else {
+            return
+        }
+        
         NSWorkspace.shared.activateFileViewerSelecting([url])
     }
 }
