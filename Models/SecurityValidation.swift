@@ -16,22 +16,31 @@ enum PathValidation {
     ///   - requireExtension: Optional required file extension (e.g., ".plist")
     /// - Returns: true if the path is safe to use, false otherwise
     static func validatePath(_ path: String, requireExtension: String? = nil) -> Bool {
-        guard !path.isEmpty,
-              !path.contains("../"),
-              !path.contains("/.."),
-              !path.contains(";"),
-              !path.contains("|"),
-              !path.contains("&"),
-              !path.contains("`"),
-              !path.contains("$"),
-              !path.contains("\n"),
-              !path.contains("\r"),
-              FileManager.default.fileExists(atPath: path) else {
+        guard !path.isEmpty else {
+            return false
+        }
+        
+        // Resolve to canonical path to handle symlinks
+        let url = URL(fileURLWithPath: path)
+        let canonicalURL = url.resolvingSymlinksInPath()
+        let canonicalPath = canonicalURL.path
+        
+        // Validate the canonical path
+        guard !canonicalPath.contains("../"),
+              !canonicalPath.contains("/.."),
+              !canonicalPath.contains(";"),
+              !canonicalPath.contains("|"),
+              !canonicalPath.contains("&"),
+              !canonicalPath.contains("`"),
+              !canonicalPath.contains("$"),
+              !canonicalPath.contains("\n"),
+              !canonicalPath.contains("\r"),
+              FileManager.default.fileExists(atPath: canonicalPath) else {
             return false
         }
         
         // Check for required extension if specified
-        if let ext = requireExtension, !path.hasSuffix(ext) {
+        if let ext = requireExtension, !canonicalPath.hasSuffix(ext) {
             return false
         }
         
@@ -42,12 +51,28 @@ enum PathValidation {
     /// - Parameter url: The URL to validate
     /// - Returns: true if the URL is safe to use, false otherwise
     static func validateFileURL(_ url: URL) -> Bool {
-        guard url.isFileURL,
-              !url.path.contains("../"),
-              !url.path.contains("/.."),
-              FileManager.default.fileExists(atPath: url.path) else {
+        guard url.isFileURL else {
             return false
         }
+        
+        // Resolve to canonical path to handle symlinks
+        let canonicalURL = url.resolvingSymlinksInPath()
+        let canonicalPath = canonicalURL.path
+        
+        // Validate the canonical path with same checks as validatePath
+        guard !canonicalPath.contains("../"),
+              !canonicalPath.contains("/.."),
+              !canonicalPath.contains(";"),
+              !canonicalPath.contains("|"),
+              !canonicalPath.contains("&"),
+              !canonicalPath.contains("`"),
+              !canonicalPath.contains("$"),
+              !canonicalPath.contains("\n"),
+              !canonicalPath.contains("\r"),
+              FileManager.default.fileExists(atPath: canonicalPath) else {
+            return false
+        }
+        
         return true
     }
 }

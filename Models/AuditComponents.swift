@@ -363,7 +363,8 @@ struct FindingRow: View {
 
     private func openVirusTotal(hash: String) {
         // Validate hash format (SHA256 is 64 hex characters)
-        guard Self.sha256Regex.firstMatch(in: hash, range: NSRange(hash.startIndex..., in: hash)) != nil else {
+        let range = NSRange(hash.startIndex..., in: hash)
+        guard Self.sha256Regex.numberOfMatches(in: hash, range: range) == 1 else {
             return
         }
         
