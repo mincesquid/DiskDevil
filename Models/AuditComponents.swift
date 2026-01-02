@@ -290,8 +290,12 @@ struct FindingRow: View {
     }
 
     private func enableFirewall() async -> String {
+        // Note: This requires admin privileges and will prompt the user
+        // Using sudo is intentional here for firewall configuration
+        // The command and arguments are hardcoded to prevent injection
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/sudo")
+        // Arguments are hardcoded and not user-controllable - safe from injection
         process.arguments = ["/usr/libexec/ApplicationFirewall/socketfilterfw", "--setglobalstate", "on"]
 
         do {
@@ -304,6 +308,21 @@ struct FindingRow: View {
     }
 
     private func fixFilePermissions(path: String) async -> String {
+        // Validate path to prevent command injection and path traversal
+        guard !path.isEmpty,
+              !path.contains("../"),
+              !path.contains("/.."),
+              !path.contains(";"),
+              !path.contains("|"),
+              !path.contains("&"),
+              !path.contains("`"),
+              !path.contains("$"),
+              !path.contains("\n"),
+              !path.contains("\r"),
+              FileManager.default.fileExists(atPath: path) else {
+            return "⚠️ Invalid or non-existent file path"
+        }
+        
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/chmod")
         process.arguments = ["644", path]
@@ -318,6 +337,22 @@ struct FindingRow: View {
     }
 
     private func disableLaunchAgent(path: String) async -> String {
+        // Validate path to prevent command injection and ensure it's a .plist file
+        guard !path.isEmpty,
+              !path.contains("../"),
+              !path.contains("/.."),
+              !path.contains(";"),
+              !path.contains("|"),
+              !path.contains("&"),
+              !path.contains("`"),
+              !path.contains("$"),
+              !path.contains("\n"),
+              !path.contains("\r"),
+              path.hasSuffix(".plist"),
+              FileManager.default.fileExists(atPath: path) else {
+            return "⚠️ Invalid or non-existent LaunchAgent path"
+        }
+        
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
         process.arguments = ["unload", path]
@@ -332,11 +367,26 @@ struct FindingRow: View {
     }
 
     private func revealInFinder(path: String) {
+        // Validate path to prevent malicious file access
+        guard !path.isEmpty,
+              !path.contains("../"),
+              !path.contains("/.."),
+              FileManager.default.fileExists(atPath: path) else {
+            return
+        }
+        
         let url = URL(fileURLWithPath: path)
         NSWorkspace.shared.activateFileViewerSelecting([url])
     }
 
     private func openVirusTotal(hash: String) {
+        // Validate hash format (SHA256 is 64 hex characters)
+        let hexPattern = "^[a-fA-F0-9]{64}$"
+        guard let regex = try? NSRegularExpression(pattern: hexPattern),
+              regex.firstMatch(in: hash, range: NSRange(hash.startIndex..., in: hash)) != nil else {
+            return
+        }
+        
         let urlString = "https://www.virustotal.com/gui/file/\(hash)"
         if let url = URL(string: urlString) {
             NSWorkspace.shared.open(url)
