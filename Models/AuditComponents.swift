@@ -103,7 +103,8 @@ struct FindingRow: View {
     // MARK: Private
     
     // Static regex for hash validation (SHA256 - 64 hex characters)
-    private static let sha256Regex = try? NSRegularExpression(pattern: "^[a-fA-F0-9]{64}$")
+    // Using try! because the pattern is hardcoded and guaranteed to be valid
+    private static let sha256Regex = try! NSRegularExpression(pattern: "^[a-fA-F0-9]{64}$")
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -293,30 +294,6 @@ struct FindingRow: View {
         }
         return "Manual remediation required - see details"
     }
-    
-    /// Validates a path to prevent command injection and path traversal attacks
-    private func validatePath(_ path: String, requireExtension: String? = nil) -> Bool {
-        guard !path.isEmpty,
-              !path.contains("../"),
-              !path.contains("/.."),
-              !path.contains(";"),
-              !path.contains("|"),
-              !path.contains("&"),
-              !path.contains("`"),
-              !path.contains("$"),
-              !path.contains("\n"),
-              !path.contains("\r"),
-              FileManager.default.fileExists(atPath: path) else {
-            return false
-        }
-        
-        // Check for required extension if specified
-        if let ext = requireExtension, !path.hasSuffix(ext) {
-            return false
-        }
-        
-        return true
-    }
 
     private func enableFirewall() async -> String {
         // Note: This requires admin privileges and will prompt the user
@@ -338,7 +315,7 @@ struct FindingRow: View {
 
     private func fixFilePermissions(path: String) async -> String {
         // Validate path to prevent command injection and path traversal
-        guard validatePath(path) else {
+        guard PathValidation.validatePath(path) else {
             return "⚠️ Invalid or non-existent file path"
         }
         
@@ -357,7 +334,7 @@ struct FindingRow: View {
 
     private func disableLaunchAgent(path: String) async -> String {
         // Validate path to prevent command injection and ensure it's a .plist file
-        guard validatePath(path, requireExtension: ".plist") else {
+        guard PathValidation.validatePath(path, requireExtension: ".plist") else {
             return "⚠️ Invalid or non-existent LaunchAgent path"
         }
         
@@ -376,10 +353,7 @@ struct FindingRow: View {
 
     private func revealInFinder(path: String) {
         // Validate path to prevent malicious file access
-        guard !path.isEmpty,
-              !path.contains("../"),
-              !path.contains("/.."),
-              FileManager.default.fileExists(atPath: path) else {
+        guard PathValidation.validatePath(path) else {
             return
         }
         
@@ -389,8 +363,7 @@ struct FindingRow: View {
 
     private func openVirusTotal(hash: String) {
         // Validate hash format (SHA256 is 64 hex characters)
-        guard let regex = Self.sha256Regex,
-              regex.firstMatch(in: hash, range: NSRange(hash.startIndex..., in: hash)) != nil else {
+        guard Self.sha256Regex.firstMatch(in: hash, range: NSRange(hash.startIndex..., in: hash)) != nil else {
             return
         }
         

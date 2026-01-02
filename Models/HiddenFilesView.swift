@@ -190,10 +190,7 @@ struct HiddenFilesView: View {
         }
 
         // Validate URL to prevent malicious file access
-        guard url.isFileURL,
-              !url.path.contains("../"),
-              !url.path.contains("/.."),
-              FileManager.default.fileExists(atPath: url.path) else {
+        guard PathValidation.validateFileURL(url) else {
             return
         }
         
