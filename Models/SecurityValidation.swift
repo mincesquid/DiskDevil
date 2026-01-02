@@ -22,20 +22,10 @@ enum PathValidation {
         
         // Resolve to canonical path to handle symlinks
         let url = URL(fileURLWithPath: path)
-        let canonicalURL = url.resolvingSymlinksInPath()
-        let canonicalPath = canonicalURL.path
+        let canonicalPath = url.resolvingSymlinksInPath().path
         
-        // Validate the canonical path
-        guard !canonicalPath.contains("../"),
-              !canonicalPath.contains("/.."),
-              !canonicalPath.contains(";"),
-              !canonicalPath.contains("|"),
-              !canonicalPath.contains("&"),
-              !canonicalPath.contains("`"),
-              !canonicalPath.contains("$"),
-              !canonicalPath.contains("\n"),
-              !canonicalPath.contains("\r"),
-              FileManager.default.fileExists(atPath: canonicalPath) else {
+        // Validate using shared logic
+        guard isPathSafe(canonicalPath) else {
             return false
         }
         
@@ -56,10 +46,30 @@ enum PathValidation {
         }
         
         // Resolve to canonical path to handle symlinks
-        let canonicalURL = url.resolvingSymlinksInPath()
-        let canonicalPath = canonicalURL.path
+        let canonicalPath = url.resolvingSymlinksInPath().path
         
-        // Validate the canonical path with same checks as validatePath
+        // Validate using shared logic
+        return isPathSafe(canonicalPath)
+    }
+    
+    /// Validates a SHA256 hash format
+    /// - Parameter hash: The hash string to validate
+    /// - Returns: true if the hash is a valid SHA256 format (64 hex characters)
+    static func validateSHA256Hash(_ hash: String) -> Bool {
+        // SHA256 is exactly 64 hexadecimal characters
+        guard hash.count == 64 else {
+            return false
+        }
+        
+        // Check if all characters are valid hex
+        let hexCharacterSet = CharacterSet(charactersIn: "0123456789abcdefABCDEF")
+        return hash.unicodeScalars.allSatisfy { hexCharacterSet.contains($0) }
+    }
+    
+    // MARK: Private
+    
+    /// Shared validation logic for canonical paths
+    private static func isPathSafe(_ canonicalPath: String) -> Bool {
         guard !canonicalPath.contains("../"),
               !canonicalPath.contains("/.."),
               !canonicalPath.contains(";"),
@@ -72,7 +82,6 @@ enum PathValidation {
               FileManager.default.fileExists(atPath: canonicalPath) else {
             return false
         }
-        
         return true
     }
 }

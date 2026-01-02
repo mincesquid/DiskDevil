@@ -99,12 +99,6 @@ struct FindingRow: View {
     // MARK: Internal
 
     let finding: AuditFinding
-    
-    // MARK: Private
-    
-    // Static regex for hash validation (SHA256 - 64 hex characters)
-    // Using try! because the pattern is hardcoded and guaranteed to be valid
-    private static let sha256Regex = try! NSRegularExpression(pattern: "^[a-fA-F0-9]{64}$")
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -362,9 +356,8 @@ struct FindingRow: View {
     }
 
     private func openVirusTotal(hash: String) {
-        // Validate hash format (SHA256 is 64 hex characters)
-        let range = NSRange(hash.startIndex..., in: hash)
-        guard Self.sha256Regex.numberOfMatches(in: hash, range: range) == 1 else {
+        // Validate hash format using centralized security validation
+        guard PathValidation.validateSHA256Hash(hash) else {
             return
         }
         
