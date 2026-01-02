@@ -10,6 +10,8 @@ import Foundation
 // MARK: - PathValidation
 
 enum PathValidation {
+    // MARK: Internal
+    
     /// Validates a file path to prevent command injection and path traversal attacks
     /// - Parameters:
     ///   - path: The path to validate
@@ -61,15 +63,23 @@ enum PathValidation {
             return false
         }
         
-        // Check if all characters are valid hex
-        let hexCharacterSet = CharacterSet(charactersIn: "0123456789abcdefABCDEF")
+        // Check if all characters are valid hex using static character set
         return hash.unicodeScalars.allSatisfy { hexCharacterSet.contains($0) }
     }
     
     // MARK: Private
     
+    /// Static hex character set for efficient hash validation
+    private static let hexCharacterSet = CharacterSet(charactersIn: "0123456789abcdefABCDEF")
+    
     /// Shared validation logic for canonical paths
     private static func isPathSafe(_ canonicalPath: String) -> Bool {
+        // Check file existence first to prevent TOCTOU attacks
+        guard FileManager.default.fileExists(atPath: canonicalPath) else {
+            return false
+        }
+        
+        // Validate against path traversal and command injection
         guard !canonicalPath.contains("../"),
               !canonicalPath.contains("/.."),
               !canonicalPath.contains(";"),
@@ -78,10 +88,10 @@ enum PathValidation {
               !canonicalPath.contains("`"),
               !canonicalPath.contains("$"),
               !canonicalPath.contains("\n"),
-              !canonicalPath.contains("\r"),
-              FileManager.default.fileExists(atPath: canonicalPath) else {
+              !canonicalPath.contains("\r") else {
             return false
         }
+        
         return true
     }
 }

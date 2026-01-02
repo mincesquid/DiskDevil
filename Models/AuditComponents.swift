@@ -290,9 +290,11 @@ struct FindingRow: View {
     }
 
     private func enableFirewall() async -> String {
-        // Note: This requires admin privileges and will prompt the user
-        // Using sudo is intentional here for firewall configuration
-        // The command and arguments are hardcoded to prevent injection
+        /*
+         * Security Note: This requires admin privileges and will prompt the user.
+         * Using sudo is intentional here for firewall configuration.
+         * The command and arguments are hardcoded to prevent injection attacks.
+         */
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/sudo")
         // Arguments are hardcoded and not user-controllable - safe from injection
