@@ -350,6 +350,14 @@ struct FindingRow: View {
     private func revealInFinder(path: String) {
         // Validate path to prevent malicious file access
         guard PathValidation.validatePath(path) else {
+            AppLogger.security.warning("Blocked attempt to reveal invalid or unsafe file path: \(path)")
+            
+            // Show alert to user
+            let alert = NSAlert()
+            alert.messageText = "Cannot Reveal Item"
+            alert.informativeText = "DiskDevil blocked this action because the file path is invalid or unsafe."
+            alert.alertStyle = .warning
+            alert.runModal()
             return
         }
         
@@ -360,6 +368,14 @@ struct FindingRow: View {
     private func openVirusTotal(hash: String) {
         // Validate hash format using centralized security validation
         guard PathValidation.validateSHA256Hash(hash) else {
+            AppLogger.security.warning("Blocked VirusTotal lookup due to invalid SHA-256 hash: \(hash)")
+
+            // Show alert to user
+            let alert = NSAlert()
+            alert.messageText = "Invalid File Hash"
+            alert.informativeText = "The selected item does not have a valid SHA-256 hash and cannot be opened in VirusTotal."
+            alert.alertStyle = .warning
+            alert.runModal()
             return
         }
         

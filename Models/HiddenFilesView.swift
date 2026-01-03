@@ -138,6 +138,11 @@ struct HiddenFilesView: View {
                 }
             )
         }
+        .alert("Cannot Reveal Item", isPresented: $showValidationError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("DiskDevil blocked this action because the file path is invalid or unsafe.")
+        }
     }
 
     // MARK: Private
@@ -148,6 +153,7 @@ struct HiddenFilesView: View {
     @State private var currentPath = FileManager.default.homeDirectoryForCurrentUser.path
     @State private var files: [FileItem] = []
     @State private var showLimitReached = false
+    @State private var showValidationError = false
 
     private func loadFiles() {
         let url = URL(fileURLWithPath: currentPath)
@@ -191,6 +197,8 @@ struct HiddenFilesView: View {
 
         // Validate URL to prevent malicious file access
         guard PathValidation.validateFileURL(url) else {
+            AppLogger.security.warning("Blocked attempt to reveal invalid or unsafe file URL: \(url.path)")
+            showValidationError = true
             return
         }
         

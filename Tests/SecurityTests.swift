@@ -10,6 +10,7 @@ import XCTest
 // Note: These tests are designed to run on macOS where the app is compiled
 #if os(macOS)
 import Foundation
+@testable import DiskDevil
 
 final class SecurityTests: XCTestCase {
     
@@ -288,6 +289,190 @@ final class SecurityTests: XCTestCase {
         // 3. Privacy firewall (when implemented)
         
         XCTAssertTrue(true, "Network entitlements are justified and necessary")
+    }
+    
+    // MARK: - SecurityValidation Tests
+    
+    func testValidatePathRejectsEmpty() {
+        XCTAssertFalse(PathValidation.validatePath(""), "Empty path should be rejected")
+    }
+    
+    func testValidatePathRejectsPathTraversal() {
+        let maliciousPaths = [
+            "../../../etc/passwd",
+            "/tmp/../../../etc/passwd",
+            "/var/log/../../etc/passwd"
+        ]
+        
+        for path in maliciousPaths {
+            XCTAssertFalse(
+                PathValidation.validatePath(path),
+                "Path traversal attempt should be rejected: \(path)"
+            )
+        }
+    }
+    
+    func testValidatePathRejectsShellMetacharacters() {
+        let tempFile = NSTemporaryDirectory() + "test_file.txt"
+        try? "test".write(toFile: tempFile, atomically: true, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(atPath: tempFile) }
+        
+        let dangerousChars = [";", "|", "&", "`", "$", "\n", "\r", "(", ")", "[", "]", "'", "\"", "\\", "<", ">", "{", "}"]
+        
+        for char in dangerousChars {
+            let maliciousPath = tempFile + char
+            XCTAssertFalse(
+                PathValidation.validatePath(maliciousPath),
+                "Path with shell metacharacter '\(char)' should be rejected"
+            )
+        }
+    }
+    
+    func testValidatePathRejectsNonExistentFiles() {
+        let nonExistentPath = "/tmp/this_file_definitely_does_not_exist_\(UUID().uuidString).txt"
+        XCTAssertFalse(
+            PathValidation.validatePath(nonExistentPath),
+            "Non-existent file should be rejected"
+        )
+    }
+    
+    func testValidatePathAcceptsValidFile() {
+        let tempFile = NSTemporaryDirectory() + "valid_test_file.txt"
+        try? "test content".write(toFile: tempFile, atomically: true, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(atPath: tempFile) }
+        
+        XCTAssertTrue(
+            PathValidation.validatePath(tempFile),
+            "Valid file path should be accepted"
+        )
+    }
+    
+    func testValidatePathWithExtensionValidation() {
+        let tempFile = NSTemporaryDirectory() + "test.plist"
+        try? "test".write(toFile: tempFile, atomically: true, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(atPath: tempFile) }
+        
+        XCTAssertTrue(
+            PathValidation.validatePath(tempFile, requireExtension: ".plist"),
+            "File with correct extension should be accepted"
+        )
+        
+        XCTAssertTrue(
+            PathValidation.validatePath(tempFile, requireExtension: "plist"),
+            "Extension validation should work with or without leading dot"
+        )
+        
+        XCTAssertFalse(
+            PathValidation.validatePath(tempFile, requireExtension: ".txt"),
+            "File with incorrect extension should be rejected"
+        )
+    }
+    
+    func testValidatePathRejectsDoubleExtension() {
+        let tempFile = NSTemporaryDirectory() + "malicious.plist.txt"
+        try? "test".write(toFile: tempFile, atomically: true, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(atPath: tempFile) }
+        
+        XCTAssertFalse(
+            PathValidation.validatePath(tempFile, requireExtension: ".plist"),
+            "File with double extension (.plist.txt) should be rejected when .plist is required"
+        )
+    }
+    
+    func testValidateFileURLRejectsNonFileURL() {
+        let httpURL = URL(string: "https://example.com")!
+        XCTAssertFalse(
+            PathValidation.validateFileURL(httpURL),
+            "HTTP URL should be rejected"
+        )
+    }
+    
+    func testValidateFileURLAcceptsValidFile() {
+        let tempFile = NSTemporaryDirectory() + "valid_test_file.txt"
+        try? "test content".write(toFile: tempFile, atomically: true, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(atPath: tempFile) }
+        
+        let fileURL = URL(fileURLWithPath: tempFile)
+        XCTAssertTrue(
+            PathValidation.validateFileURL(fileURL),
+            "Valid file URL should be accepted"
+        )
+    }
+    
+    func testValidateFileURLRejectsPathTraversal() {
+        let maliciousURL = URL(fileURLWithPath: "../../../etc/passwd")
+        XCTAssertFalse(
+            PathValidation.validateFileURL(maliciousURL),
+            "File URL with path traversal should be rejected"
+        )
+    }
+    
+    func testValidateSHA256HashAcceptsValid() {
+        let validHashes = [
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", // SHA256 of empty string
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", // SHA256 of "abc"
+            "ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789"  // Mixed case
+        ]
+        
+        for hash in validHashes {
+            XCTAssertTrue(
+                PathValidation.validateSHA256Hash(hash),
+                "Valid SHA256 hash should be accepted: \(hash)"
+            )
+        }
+    }
+    
+    func testValidateSHA256HashRejectsInvalid() {
+        let invalidHashes = [
+            "short",                                                                  // Too short
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855aa", // Too long
+            "g3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", // Invalid character 'g'
+            "e3b0c442 8fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", // Contains space
+            "",                                                                       // Empty
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b85",  // One char short
+            "../../../etc/passwd000000000000000000000000000000000000000000000"  // Path traversal attempt padded
+        ]
+        
+        for hash in invalidHashes {
+            XCTAssertFalse(
+                PathValidation.validateSHA256Hash(hash),
+                "Invalid SHA256 hash should be rejected: \(hash)"
+            )
+        }
+    }
+    
+    func testSymlinkResolutionInValidation() {
+        let tempDir = NSTemporaryDirectory()
+        let targetFile = tempDir + "symlink_target_\(UUID().uuidString).txt"
+        let symlinkPath = tempDir + "symlink_\(UUID().uuidString).txt"
+        
+        // Create target file
+        try? "test content".write(toFile: targetFile, atomically: true, encoding: .utf8)
+        
+        // Create symlink
+        try? FileManager.default.createSymbolicLink(atPath: symlinkPath, withDestinationPath: targetFile)
+        
+        defer {
+            try? FileManager.default.removeItem(atPath: targetFile)
+            try? FileManager.default.removeItem(atPath: symlinkPath)
+        }
+        
+        // Validation should follow the symlink and validate the target
+        XCTAssertTrue(
+            PathValidation.validatePath(symlinkPath),
+            "Valid symlink to existing file should be accepted"
+        )
+        
+        // Create symlink with dangerous name but pointing to safe target
+        let dangerousSymlink = tempDir + "dangerous;name.txt"
+        try? FileManager.default.createSymbolicLink(atPath: dangerousSymlink, withDestinationPath: targetFile)
+        defer { try? FileManager.default.removeItem(atPath: dangerousSymlink) }
+        
+        // Should be rejected because original path has dangerous characters
+        XCTAssertFalse(
+            PathValidation.validatePath(dangerousSymlink),
+            "Symlink with dangerous characters in name should be rejected"
+        )
     }
 }
 #endif

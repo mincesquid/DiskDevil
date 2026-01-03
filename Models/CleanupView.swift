@@ -469,6 +469,11 @@ struct CleanupView: View {
     private func reveal(_ url: URL) {
         // Validate URL to prevent malicious file access
         guard PathValidation.validateFileURL(url) else {
+            AppLogger.security.warning("Blocked attempt to reveal invalid or unsafe file URL: \(url.path)")
+            alert = CleanupAlert(
+                title: "Cannot Reveal Item",
+                message: "DiskDevil blocked this action because the file path is invalid or unsafe."
+            )
             return
         }
         NSWorkspace.shared.activateFileViewerSelecting([url])
