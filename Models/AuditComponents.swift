@@ -290,8 +290,14 @@ struct FindingRow: View {
     }
 
     private func enableFirewall() async -> String {
+        /*
+         * Security Note: This requires admin privileges and will prompt the user.
+         * Using sudo is intentional here for firewall configuration.
+         * The command and arguments are hardcoded to prevent injection attacks.
+         */
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/sudo")
+        // Arguments are hardcoded and not user-controllable - safe from injection
         process.arguments = ["/usr/libexec/ApplicationFirewall/socketfilterfw", "--setglobalstate", "on"]
 
         do {
@@ -304,6 +310,11 @@ struct FindingRow: View {
     }
 
     private func fixFilePermissions(path: String) async -> String {
+        // Validate path to prevent command injection and path traversal
+        guard PathValidation.validatePath(path) else {
+            return "⚠️ Invalid or non-existent file path"
+        }
+        
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/chmod")
         process.arguments = ["644", path]
@@ -318,6 +329,11 @@ struct FindingRow: View {
     }
 
     private func disableLaunchAgent(path: String) async -> String {
+        // Validate path to prevent command injection and ensure it's a .plist file
+        guard PathValidation.validatePath(path, requireExtension: ".plist") else {
+            return "⚠️ Invalid or non-existent LaunchAgent path"
+        }
+        
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
         process.arguments = ["unload", path]
@@ -332,11 +348,37 @@ struct FindingRow: View {
     }
 
     private func revealInFinder(path: String) {
+        // Validate path to prevent malicious file access
+        guard PathValidation.validatePath(path) else {
+            AppLogger.security.warning("Blocked attempt to reveal invalid or unsafe file path: \(path)")
+            
+            // Show alert to user
+            let alert = NSAlert()
+            alert.messageText = "Cannot Reveal Item"
+            alert.informativeText = "DiskDevil blocked this action because the file path is invalid or unsafe."
+            alert.alertStyle = .warning
+            alert.runModal()
+            return
+        }
+        
         let url = URL(fileURLWithPath: path)
         NSWorkspace.shared.activateFileViewerSelecting([url])
     }
 
     private func openVirusTotal(hash: String) {
+        // Validate hash format using centralized security validation
+        guard PathValidation.validateSHA256Hash(hash) else {
+            AppLogger.security.warning("Blocked VirusTotal lookup due to invalid SHA-256 hash: \(hash)")
+
+            // Show alert to user
+            let alert = NSAlert()
+            alert.messageText = "Invalid File Hash"
+            alert.informativeText = "The selected item does not have a valid SHA-256 hash and cannot be opened in VirusTotal."
+            alert.alertStyle = .warning
+            alert.runModal()
+            return
+        }
+        
         let urlString = "https://www.virustotal.com/gui/file/\(hash)"
         if let url = URL(string: urlString) {
             NSWorkspace.shared.open(url)
