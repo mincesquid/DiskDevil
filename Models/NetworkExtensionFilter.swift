@@ -137,7 +137,7 @@ class NetworkExtensionFilter: NSObject, NetworkFilterProtocol {
     }
     
     private func loadFilterConfiguration() async throws {
-        try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             filterManager.loadFromPreferences { error in
                 if let error = error {
                     continuation.resume(throwing: error)
@@ -188,7 +188,7 @@ class NetworkExtensionFilter: NSObject, NetworkFilterProtocol {
     }
     
     private func saveFilterConfiguration() async throws {
-        try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             filterManager.saveToPreferences { error in
                 if let error = error {
                     continuation.resume(throwing: error)
